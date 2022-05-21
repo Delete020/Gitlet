@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="" />
+    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="sp21 lab6 Skeleton Code">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lab6/capers/CapersRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/lab6/capers/CapersRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lab6/capers/Dog.java" beforeDir="false" afterPath="$PROJECT_DIR$/lab6/capers/Dog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lab6/capers/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/lab6/capers/Main.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,13 +19,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectId" id="29S1C4PhkzJRSH0jJPIJND0ROhR" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false"
+    "WebServerToolWindowFactoryState": "false",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.控制台字体"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
@@ -30,8 +45,27 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1653091544204</updated>
+      <workItem from="1653091545645" duration="15748000" />
     </task>
+    <task id="LOCAL-00001" summary="init">
+      <created>1653091748177</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1653091748177</updated>
+    </task>
+    <task id="LOCAL-00002" summary="sp21 lab6 Skeleton Code">
+      <created>1653093708335</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1653093708335</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -43,5 +77,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="init" />
+    <MESSAGE value="sp21 lab6 Skeleton Code" />
+    <option name="LAST_COMMIT_MESSAGE" value="sp21 lab6 Skeleton Code" />
   </component>
 </project>
