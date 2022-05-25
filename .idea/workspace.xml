@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="sp21 lab6 Skeleton Code">
+    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="sp22 proj3 Skeleton Code">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lab6/capers/CapersRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/lab6/capers/CapersRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lab6/capers/Dog.java" beforeDir="false" afterPath="$PROJECT_DIR$/lab6/capers/Dog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lab6/capers/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/lab6/capers/Main.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,15 +25,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.控制台字体"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors.控制台字体&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="默认任务">
@@ -45,7 +42,10 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1653091544204</updated>
-      <workItem from="1653091545645" duration="15748000" />
+      <workItem from="1653091545645" duration="16776000" />
+      <workItem from="1653203811115" duration="197000" />
+      <workItem from="1653401068586" duration="1142000" />
+      <workItem from="1653481654657" duration="459000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1653091748177</created>
@@ -61,7 +61,14 @@
       <option name="project" value="LOCAL" />
       <updated>1653093708335</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="lab6 complete">
+      <created>1653128928868</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1653128928868</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -81,6 +88,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="init" />
     <MESSAGE value="sp21 lab6 Skeleton Code" />
-    <option name="LAST_COMMIT_MESSAGE" value="sp21 lab6 Skeleton Code" />
+    <MESSAGE value="lab6 complete" />
+    <option name="LAST_COMMIT_MESSAGE" value="lab6 complete" />
   </component>
 </project>
