@@ -31,7 +31,10 @@ public class Main {
                 validateNumArgs(operands, 0);
                 GitletRepository.init();
             }
-            case ("add") -> GitletRepository.add();
+            case ("add") -> {
+                validateNumArgs(operands, 1);
+                GitletRepository.add(args[1]);
+            }
             default -> exitWithError("No command with that name exists.");
         }
     }
@@ -44,12 +47,15 @@ public class Main {
      * print the message and exit.
      *
      * @param operands User input operands from command line
-     * @param n    Number of expected arguments
+     * @param number    Number of expected arguments
      */
-    public static void validateNumArgs(int operands, int n) {
-        if (operands > n) {
+    public static void validateNumArgs(int operands, int number) {
+        validateNumArgs(operands, number, number);
+    }
+
+    public static void validateNumArgs(int operands, int min, int max) {
+        if (operands > max || operands < min) {
             exitWithError("Incorrect operands.");
         }
     }
-
 }

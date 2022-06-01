@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="sp22 proj3 Skeleton Code">
-      <change afterPath="$PROJECT_DIR$/proj3/gitlet/Commit.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" afterDir="false" />
+    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="finish init">
+      <change afterPath="$PROJECT_DIR$/proj3/gitlet/Stage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/gitlet-design.md" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/gitlet-design.md" afterDir="false" />
     </list>
@@ -77,7 +77,12 @@
       <workItem from="1653481654657" duration="459000" />
       <workItem from="1653486908148" duration="5363000" />
       <workItem from="1653665892011" duration="695000" />
-      <workItem from="1653705279643" duration="18263000" />
+      <workItem from="1653705279643" duration="20330000" />
+      <workItem from="1653809623276" duration="328000" />
+      <workItem from="1653811079207" duration="599000" />
+      <workItem from="1653914637769" duration="8549000" />
+      <workItem from="1654046858748" duration="12594000" />
+      <workItem from="1654092969827" duration="940000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1653091748177</created>
@@ -100,7 +105,14 @@
       <option name="project" value="LOCAL" />
       <updated>1653128928868</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="finish init">
+      <created>1653741570213</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1653741570213</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -121,6 +133,7 @@
     <MESSAGE value="init" />
     <MESSAGE value="sp21 lab6 Skeleton Code" />
     <MESSAGE value="lab6 complete" />
-    <option name="LAST_COMMIT_MESSAGE" value="lab6 complete" />
+    <MESSAGE value="finish init" />
+    <option name="LAST_COMMIT_MESSAGE" value="finish init" />
   </component>
 </project>

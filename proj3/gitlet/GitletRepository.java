@@ -3,9 +3,9 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 
 /**
  * @author Delete020
@@ -24,7 +24,9 @@ public class GitletRepository {
     static final File GITLET_DIR = Utils.join(CWD, ".gitlet");
     static final File OBJECTS_DIR = Utils.join(GITLET_DIR, "objects");
     static final File BRANCH_DIR = Utils.join(GITLET_DIR, "branches");
-    static final File HEAD_POINT = Utils.join(GITLET_DIR, "HEAD");
+    static final File HEAD = Utils.join(GITLET_DIR, "HEAD");
+    static final File STAGE = Utils.join(GITLET_DIR, "stage");
+
 
     /**
      * Creates a new Gitlet version-control system in the current directory.
@@ -40,10 +42,11 @@ public class GitletRepository {
         OBJECTS_DIR.mkdirs();
         BRANCH_DIR.mkdirs();
 
-        // Initialize head and master branches
-        HEAD_POINT.createNewFile();
+        // Initialize files, head, master branches, stage
+        HEAD.createNewFile();
         File master = Utils.join(BRANCH_DIR, "master");
         master.createNewFile();
+        saveStage(new Stage());
 
         // first commit
         Commit initialCommit = new Commit("initial commit", null);
@@ -51,16 +54,27 @@ public class GitletRepository {
 
         // persistent commit
         String commitSha1 = getSha1(initialCommit);
-        persistentObject(commitSha1, initialCommit);
+        persistentCommit(commitSha1, initialCommit);
 
         // branches point to the fist commit
-        Utils.writeContents(HEAD_POINT, commitSha1);
+        Utils.writeContents(HEAD, commitSha1);
         Utils.writeContents(master, commitSha1);
     }
 
 
-    public static void add() {
+    /**
+     * Adds a copy of the file as it currently exists to the staging area
+     */
+    public static void add(String fileName) throws IOException {
+        File file = Utils.join(CWD, fileName);
+        // Check the file exists in the working directory
+        if (!file.exists()) {
+            exitWithError("File does not exist.");
+        }
 
+        Stage stage = Utils.readObject(STAGE, Stage.class);
+        stage.addFile(fileName, file);
+        saveStage(stage);
     }
 
 
@@ -82,6 +96,11 @@ public class GitletRepository {
     }
 
 
+    public static Commit getHead() {
+        String currentBranch = Utils.readContentsAsString(HEAD);
+        return Utils.readObject(getObjectFile(currentBranch), Commit.class);
+    }
+
     /**
      * Returns the SHA-1 hash of the concatenation of object
      */
@@ -89,15 +108,26 @@ public class GitletRepository {
         return Utils.sha1(Utils.serialize(obj));
     }
 
+
     /**
-     * Persistent commit and blobs
+     * Persistent commit
      */
-    private static void persistentObject(String sha1, Serializable obj) {
+    private static void persistentCommit(String sha1, Serializable obj) {
+        Utils.writeObject(getObjectFile(sha1), obj);
+    }
+
+
+    public static File getObjectFile(String sha1) {
         File dir = Utils.join(GitletRepository.OBJECTS_DIR, sha1.substring(0, 2));
         if (!dir.exists()) {
             dir.mkdir();
         }
-        File file = Utils.join(dir, sha1.substring(2));
-        Utils.writeObject(file, obj);
+        return Utils.join(dir, sha1.substring(2));
     }
+
+
+    private static void saveStage(Stage stage) {
+        Utils.writeObject(STAGE, stage);
+    }
+
 }
