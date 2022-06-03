@@ -13,12 +13,18 @@ public class Commit implements Serializable {
     private String message;
     private ZonedDateTime timestamp;
     private final String parent;
-    Map<String, String> blobs;
+    private final String mergeFrom;
+    private Map<String, String> blobs;
 
     public Commit(String message, String parent) {
+        this(message, parent, "");
+    }
+
+    public Commit(String message, String parent, String mergeFrom) {
         this.message = message;
         this.timestamp = ZonedDateTime.now();
         this.parent = parent;
+        this.mergeFrom = mergeFrom;
         this.blobs = new TreeMap<>();
     }
 
@@ -40,6 +46,10 @@ public class Commit implements Serializable {
 
     public String getParent() {
         return parent;
+    }
+
+    public String getMergeFrom() {
+        return mergeFrom;
     }
 
     public Map<String, String> getBlobs() {

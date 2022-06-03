@@ -17,6 +17,19 @@ this section should be as concise as possible. Leave the full
 explanation to the following sections. You may cut this section short
 if you find your document is too wordy.
 
+### GitletRepository
+
+The main logic of the program is implemented where the non-remote commands of the gitlet are handled
+
+#### static variables
+
+- `static final String CWD = System.getProperty("user.dir");`The Current Working Directory.
+- `static final File GITLET_DIR = Utils.join(CWD, ".gitlet");` The `.gitlet` hidden folder, all gitlet related data will be stored in this directory
+- `static final File OBJECTS_DIR = Utils.join(GITLET_DIR, "objects");` The object folder, which stores all commit and blob files
+- `static final File BRANCH_DIR = Utils.join(GITLET_DIR, "branches");` The folder where all branches are stored and each branch is persisted as a file in this folder
+- `static final File HEAD = Utils.join(GITLET_DIR, "HEAD");`Head file, pointing to the current branch
+- `static final File STAGE = Utils.join(GITLET_DIR, "stage");`The staging area file that records the files to be added to the next commit
+
 ### Commit
 
 ### instance variables
@@ -25,6 +38,13 @@ if you find your document is too wordy.
 - Timestamp - Automatically set to current commit time
 - Parent - The sha1 string of the parent commit
 - blobs - Record each file that is committed
+
+### Stage
+
+#### instance variables
+
+- additionMap - Record the files added to the staging area
+- removalMap - Record the files to be removed in the next commit
 
 ## 2. Algorithms
 
@@ -68,14 +88,29 @@ across multiple runs. Here are some tips for writing this section:
   on the next execution of
        `java gitlet.Main commit -m “modify wug.txt”`, 
   the correct commit will be made.
-  
 * A good strategy for reasoning about persistence is to identify which
   pieces of data are needed across multiple calls to Gitlet. Then,
   prove that the data remains consistent for all future calls.
-  
 * This section should also include a description of your .gitlet
   directory and any files or subdirectories you intend on including
   there.
+
+The `GitletRepository` will handle all gitlet commands
+
+### init
+
+1. Check the command operands correct or not, if not only one argument, exit program 
+2. If the `.gitlet` folder doesn’t exist, create it and initialize branch folder and objects folder,  head and stage file, and first branch master
+3. Create first commit  with an init message and no file saved
+
+#### add
+
+1. Check if the given file exists in the working directory
+2. Read the persistent stage file and add this file using its internal methods
+3. Remove the given file from removalMap
+4. Check if it is the same as the one saved in the current branch, and if it is, remove the file from the additionMap and return
+5. Add this file to the staging area 
+6. If the file already exists, do nothing, otherwise copy the file from the working directory to the objects directory
 
 ## 4. Design Diagram
 

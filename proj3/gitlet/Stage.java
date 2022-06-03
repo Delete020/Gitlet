@@ -11,8 +11,8 @@ import java.util.TreeMap;
  * @since 5/30/22 9:14 PM
  */
 public class Stage implements Serializable {
-    TreeMap<String, String> additionMap;
-    TreeMap<String, String> removalMap;
+    private TreeMap<String, String> additionMap;
+    private TreeMap<String, String> removalMap;
 
     public Stage() {
         additionMap = new TreeMap<>();
@@ -37,8 +37,9 @@ public class Stage implements Serializable {
 
     /**
      * Copy files from the working directory to the staging area
+     *
      * @param fileName File name
-     * @param file Working directory file
+     * @param file     Working directory file
      */
     public void addFile(String fileName, File file) throws IOException {
         String stageFileSha1 = Utils.sha1(Utils.readContents(file));
@@ -46,9 +47,10 @@ public class Stage implements Serializable {
 
         removalMap.remove(fileName);
 
-        // The file is identical to the parent commit file
+        // The file is identical to the parent commit file or not
         String parentVersion = GitletRepository.getHead().getBlobs().get(fileName);
-        if (parentVersion != null &&  parentVersion.equals(stageFileSha1)) {
+        if (parentVersion != null && parentVersion.equals(stageFileSha1)) {
+            // Remove it from the staging area， if a file changed, added, and then changed back
             additionMap.remove(fileName);
             return;
         }

@@ -4,12 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="finish init">
-      <change afterPath="$PROJECT_DIR$/proj3/gitlet/Stage.java" afterDir="false" />
+    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="finish commit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proj3/gitlet/Commit.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Commit.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/proj3/gitlet/gitlet-design.md" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/gitlet-design.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proj3/gitlet/Stage.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Stage.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proj3/testing/gitlet/gitlet-design.md" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/testing/gitlet/gitlet-design.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,7 +83,9 @@
       <workItem from="1653811079207" duration="599000" />
       <workItem from="1653914637769" duration="8549000" />
       <workItem from="1654046858748" duration="12594000" />
-      <workItem from="1654092969827" duration="940000" />
+      <workItem from="1654092969827" duration="2197000" />
+      <workItem from="1654163048029" duration="717000" />
+      <workItem from="1654256295693" duration="10345000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1653091748177</created>
@@ -112,7 +115,14 @@
       <option name="project" value="LOCAL" />
       <updated>1653741570213</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="finish add">
+      <created>1654094034392</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1654094034392</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -134,6 +144,8 @@
     <MESSAGE value="sp21 lab6 Skeleton Code" />
     <MESSAGE value="lab6 complete" />
     <MESSAGE value="finish init" />
-    <option name="LAST_COMMIT_MESSAGE" value="finish init" />
+    <MESSAGE value="finish add" />
+    <MESSAGE value="finish commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="finish commit" />
   </component>
 </project>

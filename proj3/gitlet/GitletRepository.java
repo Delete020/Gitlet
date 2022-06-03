@@ -5,18 +5,18 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
+import java.util.Map;
 
 /**
  * @author Delete020
  * @since 5/25/22 9:57 PM
- *
+ * <p>
  * The structure of a Capers Repository is as follows:
- *
+ * <p>
  * .gitlet/ -- top level folder for all persistent data
- *    - objects/ -- folder containing all of the persistent data for commits and blobs
- *    - branches/ -- folder containing all of the persistent data for branch
- *    - HEAD/ -- file containing the current HEAD point
+ * - objects/ -- folder containing all of the persistent data for commits and blobs
+ * - branches/ -- folder containing all of the persistent data for branch
+ * - HEAD/ -- file containing the current HEAD point
  */
 public class GitletRepository {
 
@@ -50,14 +50,14 @@ public class GitletRepository {
 
         // first commit
         Commit initialCommit = new Commit("initial commit", null);
-        initialCommit.setTimestamp(ZonedDateTime.of(1970, 1, 1, 0, 0, 0,0, ZoneOffset.UTC));
+        initialCommit.setTimestamp(ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC));
 
         // persistent commit
         String commitSha1 = getSha1(initialCommit);
         persistentCommit(commitSha1, initialCommit);
 
         // branches point to the fist commit
-        Utils.writeContents(HEAD, commitSha1);
+        Utils.writeContents(HEAD, "master");
         Utils.writeContents(master, commitSha1);
     }
 
@@ -75,6 +75,69 @@ public class GitletRepository {
         Stage stage = Utils.readObject(STAGE, Stage.class);
         stage.addFile(fileName, file);
         saveStage(stage);
+    }
+
+
+    /**
+     * Saves a snapshot of tracked files
+     */
+    public static void commit(String message) {
+        // Commit must have a non-blank message.
+        if (message.isEmpty()) {
+            exitWithError("Please enter a commit message.");
+        }
+
+        // Get staging area, if empty means no files have been staged, abort.
+        Stage stage = getStage();
+        if (stage.getAdditionMap().isEmpty() && stage.getRemovalMap().isEmpty()) {
+            exitWithError("No changes added to the commit.");
+        }
+
+        // Get the contents of head
+        String headContent = Utils.readContentsAsString(HEAD);
+        // Get parent commit sha1 string
+        String parentSha1 = headContent;
+        // Two cases, head points to a branch or head points to a commit object
+        boolean isHeadPointBranch = false;
+        if (Utils.join(BRANCH_DIR, headContent).exists()) {
+            isHeadPointBranch = true;
+            parentSha1 = getBranchSha1(headContent);
+        }
+
+        // Create a new commit object, get the parent commit blobs
+        Commit commit = new Commit(message, parentSha1);
+        Map<String, String> blobs = getHead().getBlobs();
+        commit.setBlobs(blobs);
+
+        // Add files saved in the staging area and remove files deleted from the staging area
+        blobs.putAll(stage.getAdditionMap());
+        for (String fileName : stage.getRemovalMap().keySet()) {
+            blobs.remove(fileName);
+        }
+
+        // clear staging area, then persistent stage
+        stage.getAdditionMap().clear();
+        stage.getRemovalMap().clear();
+        saveStage(stage);
+
+        // Remove the files removed by the system rm command
+        for (String blobsFile : blobs.keySet()) {
+            if (!Utils.join(CWD, blobsFile).exists()) {
+                blobs.remove(blobsFile);
+            }
+        }
+
+        // Persistent new commit
+        String commitSha1 = getSha1(commit);
+        persistentCommit(commitSha1, commit);
+
+        // Update branch or head point to new commit
+        if (isHeadPointBranch) {
+            File branch = Utils.join(BRANCH_DIR, headContent);
+            Utils.writeContents(branch, commitSha1);
+        } else {
+            Utils.writeContents(HEAD, commitSha1);
+        }
     }
 
 
@@ -96,9 +159,47 @@ public class GitletRepository {
     }
 
 
+    public static String getBranchSha1(String branch) {
+        File branchFile = Utils.join(BRANCH_DIR, branch);
+        return Utils.readContentsAsString(branchFile);
+    }
+
+
+    /**
+     * Get the object of the branch or commit pointed to by head
+     */
     public static Commit getHead() {
-        String currentBranch = Utils.readContentsAsString(HEAD);
-        return Utils.readObject(getObjectFile(currentBranch), Commit.class);
+        String headContent = Utils.readContentsAsString(HEAD);
+        if (Utils.join(BRANCH_DIR, headContent).exists()) {
+            return getBranch(headContent);
+        }
+        return getCommit(headContent);
+    }
+
+
+    /**
+     * Get the commit object that the branch points to
+     */
+    public static Commit getBranch(String branch) {
+        String branchCommitSha1 = getBranchSha1(branch);
+        return getCommit(branchCommitSha1);
+    }
+
+
+    public static Commit getCommit(String sha1) {
+        File commit = getObjectFile(sha1);
+        if (!commit.exists() || !commit.isFile()) {
+            throw Utils.error("No commit with that id exists.");
+        }
+        return Utils.readObject(commit, Commit.class);
+    }
+
+
+    /**
+     * Get the staging area object
+     */
+    public static Stage getStage() {
+        return Utils.readObject(STAGE, Stage.class);
     }
 
     /**
@@ -117,6 +218,9 @@ public class GitletRepository {
     }
 
 
+    /**
+     * Get the file directory of the commit or blob
+     */
     public static File getObjectFile(String sha1) {
         File dir = Utils.join(GitletRepository.OBJECTS_DIR, sha1.substring(0, 2));
         if (!dir.exists()) {
@@ -126,6 +230,9 @@ public class GitletRepository {
     }
 
 
+    /**
+     * Persistent stage
+     */
     private static void saveStage(Stage stage) {
         Utils.writeObject(STAGE, stage);
     }
