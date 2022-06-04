@@ -6,8 +6,7 @@ import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Delete020
@@ -224,6 +223,79 @@ public class GitletRepository {
         if (!exists) {
             System.out.println("Found no commit with that message.");
         }
+    }
+
+
+    /**
+     * Display current branch information
+     */
+    public static void status() {
+        // branch status
+        String headContent = Utils.readContentsAsString(HEAD);
+        System.out.println("=== Branches ===");
+        List<String> branchList = Objects.requireNonNull(Utils.plainFilenamesIn(BRANCH_DIR));
+        Collections.sort(branchList);
+        for (String branch : branchList) {
+            if (branch.equals(headContent)) {
+                System.out.print("*");
+            }
+            System.out.println(branch);
+        }
+        System.out.println();
+
+        // get staging area and head commit blobs
+        Map<String, String> blobs = getHead().getBlobs();
+        Stage stage = getStage();
+        TreeMap<String, String> stageAdditionList = stage.getAdditionMap();
+        List<String> modifyList = new ArrayList<>();
+        // staged file
+        System.out.println("=== Staged Files ===");
+        for (String fileName : stageAdditionList.keySet()) {
+            System.out.println(fileName);
+            blobs.remove(fileName);
+            if (differentFile(fileName, stageAdditionList)) {
+                modifyList.add(fileName);
+            }
+        }
+        System.out.println();
+
+        // removed file
+        System.out.println("=== Removed Files ===");
+        for (String fileName : stage.getRemovalMap().keySet()) {
+            System.out.println(fileName);
+            blobs.remove(fileName);
+        }
+        System.out.println();
+
+        // modify not staged file
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        for (String fileName : blobs.keySet()) {
+            if (differentFile(fileName, blobs)) {
+                modifyList.add(fileName);
+            }
+        }
+        Collections.sort(modifyList);
+        modifyList.forEach(System.out::println);
+        System.out.println();
+
+        // untracked files
+        System.out.println("=== Untracked Files ===");
+        blobs.putAll(stageAdditionList);
+        for (String fileName : Utils.plainFilenamesIn(CWD)) {
+            if (!blobs.containsKey(fileName)) {
+                System.out.println(fileName);
+            }
+        }
+    }
+
+
+    private static boolean differentFile(String fileName, Map<String, String> compare) {
+        File file = Utils.join(CWD, fileName);
+        if (!file.exists()) {
+            return true;
+        }
+        String fileSha1 = Utils.sha1(fileName, Utils.readContentsAsString(file));
+        return !compare.get(fileName).equals(fileSha1);
     }
 
 

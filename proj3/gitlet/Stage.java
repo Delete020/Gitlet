@@ -42,7 +42,7 @@ public class Stage implements Serializable {
      * @param file     Working directory file
      */
     public void addFile(String fileName, File file) throws IOException {
-        String stageFileSha1 = Utils.sha1(Utils.readContents(file));
+        String stageFileSha1 = Utils.sha1(fileName, Utils.readContents(file));
         File stageFile = GitletRepository.getObjectFile(stageFileSha1);
 
         removalMap.remove(fileName);
