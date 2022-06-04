@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * @author Delete020
@@ -28,6 +28,7 @@ public class GitletRepository {
     static final File HEAD = Utils.join(GITLET_DIR, "HEAD");
     static final File STAGE = Utils.join(GITLET_DIR, "stage");
 
+    static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z");
 
     /**
      * Creates a new Gitlet version-control system in the current directory.
@@ -142,12 +143,16 @@ public class GitletRepository {
     }
 
 
+    /**
+     * Remove file from staging area or current  working directory
+     */
     public static void rm(String fileName) {
         Stage stage = getStage();
-        Commit head  = getHead();
+        Commit head = getHead();
         Map<String, String> additionMap = stage.getAdditionMap();
         Map<String, String> blobs = head.getBlobs();
 
+        // Two cases, file currently staged or in the current commit, otherwise error
         if (additionMap.containsKey(fileName)) {
             additionMap.remove(fileName);
             saveStage(stage);
@@ -157,6 +162,29 @@ public class GitletRepository {
             saveStage(stage);
         } else {
             exitWithError("No reason to remove the file.");
+        }
+    }
+
+
+    /**
+     * Display information about each commit backwards along the commit tree until the initial commit.
+     */
+    public static void log() {
+        String sha1 = getHeadSha1();
+        Commit commit;
+
+        while (sha1 != null) {
+            commit = getCommit(sha1);
+            System.out.println("===");
+            System.out.println("commit " + sha1);
+            if (commit.getMergeFrom() != null) {
+                System.out.println("Merge: " + commit.getParent().substring(0, 7) + " " + commit.getMergeFrom().substring(0, 7));
+            }
+            System.out.println("Date: " + commit.getTimestamp().withZoneSameInstant(ZoneOffset.systemDefault()).format(ZONE_DATE_TIME_FORMATTER));
+            System.out.println(commit.getMessage());
+            System.out.println();
+
+            sha1 = commit.getParent();
         }
     }
 
@@ -178,7 +206,20 @@ public class GitletRepository {
         System.exit(0);
     }
 
+    /**
+     * Returns the sha1 string of the commit pointed to by HEAD
+     */
+    public static String getHeadSha1() {
+        String headContent = Utils.readContentsAsString(HEAD);
+        if (Utils.join(BRANCH_DIR, headContent).exists()) {
+            return getBranchSha1(headContent);
+        }
+        return headContent;
+    }
 
+    /**
+     * Returns the sha1 string of the commit pointed to by the specified branch
+     */
     public static String getBranchSha1(String branch) {
         File branchFile = Utils.join(BRANCH_DIR, branch);
         return Utils.readContentsAsString(branchFile);
@@ -189,11 +230,8 @@ public class GitletRepository {
      * Get the object of the branch or commit pointed to by head
      */
     public static Commit getHead() {
-        String headContent = Utils.readContentsAsString(HEAD);
-        if (Utils.join(BRANCH_DIR, headContent).exists()) {
-            return getBranch(headContent);
-        }
-        return getCommit(headContent);
+        String headCommitSha1 = getHeadSha1();
+        return getCommit(headCommitSha1);
     }
 
 
@@ -242,6 +280,9 @@ public class GitletRepository {
      * Get the file directory of the commit or blob
      */
     public static File getObjectFile(String sha1) {
+        if (sha1 == null || sha1.isEmpty()) {
+            throw Utils.error("sha1 is null, can't get object");
+        }
         File dir = Utils.join(GitletRepository.OBJECTS_DIR, sha1.substring(0, 2));
         if (!dir.exists()) {
             dir.mkdir();

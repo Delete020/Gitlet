@@ -17,7 +17,7 @@ public class Commit implements Serializable {
     private Map<String, String> blobs;
 
     public Commit(String message, String parent) {
-        this(message, parent, "");
+        this(message, parent, null);
     }
 
     public Commit(String message, String parent, String mergeFrom) {
