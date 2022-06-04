@@ -1,0 +1,9 @@
+I init.in
+> init
+<<<
++ wug wug.txt
+> add wug
+<<<
+> commit "add wug"
+<<<
+

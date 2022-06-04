@@ -1,0 +1,13 @@
+>init
+<<<
++ a wug.txt
+>rm a
+No reason to remove the file.
+<<<
+>add a
+<<<
+>commit "add a"
+<<<
+>rm a
+<<<
+

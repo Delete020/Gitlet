@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author Delete020
@@ -137,6 +138,25 @@ public class GitletRepository {
             Utils.writeContents(branch, commitSha1);
         } else {
             Utils.writeContents(HEAD, commitSha1);
+        }
+    }
+
+
+    public static void rm(String fileName) {
+        Stage stage = getStage();
+        Commit head  = getHead();
+        Map<String, String> additionMap = stage.getAdditionMap();
+        Map<String, String> blobs = head.getBlobs();
+
+        if (additionMap.containsKey(fileName)) {
+            additionMap.remove(fileName);
+            saveStage(stage);
+        } else if (blobs.containsKey(fileName)) {
+            stage.getRemovalMap().put(fileName, blobs.get(fileName));
+            Utils.restrictedDelete(fileName);
+            saveStage(stage);
+        } else {
+            exitWithError("No reason to remove the file.");
         }
     }
 

@@ -112,6 +112,12 @@ The `GitletRepository` will handle all gitlet commands
 5. Add this file to the staging area 
 6. If the file already exists, do nothing, otherwise copy the file from the working directory to the objects directory
 
+#### commit
+
+1. if staging area is not empty, create a new commit object and add file in the staging area to blobs, remove file by the  rm command from blobs 
+2. clear staging area
+3. update head or currently used branch to point to the new commit
+
 ## 4. Design Diagram
 
 Attach a picture of your design diagram illustrating the structure of your
