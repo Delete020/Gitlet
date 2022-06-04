@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -66,6 +67,23 @@ public class Stage implements Serializable {
         Files.copy(file.toPath(), stageFile.toPath());
     }
 
+    /**
+     * Remove file from staging area
+     */
+    public void removeFile(String fileName) {
+        Commit head = GitletRepository.getHead();
+        Map<String, String> blobs = head.getBlobs();
+
+        // Two cases, file currently staged or in the current commit, otherwise error
+        if (additionMap.containsKey(fileName)) {
+            additionMap.remove(fileName);
+        } else if (blobs.containsKey(fileName)) {
+            removalMap.put(fileName, blobs.get(fileName));
+            Utils.restrictedDelete(fileName);
+        } else {
+            GitletRepository.exitWithError("No reason to remove the file.");
+        }
+    }
 
     /**
      * Deleting files from the staging area

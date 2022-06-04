@@ -146,25 +146,12 @@ public class GitletRepository {
 
 
     /**
-     * Remove file from staging area or current  working directory
+     * Remove file from staging area or current working directory
      */
     public static void rm(String fileName) {
         Stage stage = getStage();
-        Commit head = getHead();
-        Map<String, String> additionMap = stage.getAdditionMap();
-        Map<String, String> blobs = head.getBlobs();
-
-        // Two cases, file currently staged or in the current commit, otherwise error
-        if (additionMap.containsKey(fileName)) {
-            additionMap.remove(fileName);
-            saveStage(stage);
-        } else if (blobs.containsKey(fileName)) {
-            stage.getRemovalMap().put(fileName, blobs.get(fileName));
-            Utils.restrictedDelete(fileName);
-            saveStage(stage);
-        } else {
-            exitWithError("No reason to remove the file.");
-        }
+        stage.removeFile(fileName);
+        saveStage(stage);
     }
 
 
