@@ -7,6 +7,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Delete020
@@ -177,17 +178,31 @@ public class GitletRepository {
 
         while (sha1 != null) {
             commit = getCommit(sha1);
-            System.out.println("===");
-            System.out.println("commit " + sha1);
-            if (commit.getMergeFrom() != null) {
-                System.out.println("Merge: " + commit.getParent().substring(0, 7) + " " + commit.getMergeFrom().substring(0, 7));
-            }
-            System.out.println("Date: " + commit.getTimestamp().withZoneSameInstant(ZoneOffset.systemDefault()).format(ZONE_DATE_TIME_FORMATTER));
-            System.out.println(commit.getMessage());
-            System.out.println();
-
+            displayCommitInfo(commit, sha1);
             sha1 = commit.getParent();
         }
+    }
+
+
+    /**
+     * Display information about all commits ever made
+     */
+    public static void globalLog() {
+        for (String commitSha1 : Objects.requireNonNull(Utils.plainFilenamesIn(COMMIT_DIR))) {
+            Commit commit = getCommit(commitSha1);
+            displayCommitInfo(commit, commitSha1);
+        }
+    }
+
+    private static void displayCommitInfo(Commit commit, String commitSha1) {
+        System.out.println("===");
+        System.out.println("commit " + commitSha1);
+        if (commit.getMergeFrom() != null) {
+            System.out.println("Merge: " + commit.getParent().substring(0, 7) + " " + commit.getMergeFrom().substring(0, 7));
+        }
+        System.out.println("Date: " + commit.getTimestamp().withZoneSameInstant(ZoneOffset.systemDefault()).format(ZONE_DATE_TIME_FORMATTER));
+        System.out.println(commit.getMessage());
+        System.out.println();
     }
 
 

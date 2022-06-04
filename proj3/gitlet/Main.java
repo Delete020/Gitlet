@@ -47,6 +47,10 @@ public class Main {
                 validateNumArgs(operands, 0);
                 GitletRepository.log();
             }
+            case ("global-log") -> {
+                validateNumArgs(operands, 0);
+                GitletRepository.globalLog();
+            }
             default -> exitWithError("No command with that name exists.");
         }
     }
