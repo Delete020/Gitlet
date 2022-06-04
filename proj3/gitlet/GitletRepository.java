@@ -24,6 +24,7 @@ public class GitletRepository {
     static final String CWD = System.getProperty("user.dir");
     static final File GITLET_DIR = Utils.join(CWD, ".gitlet");
     static final File OBJECTS_DIR = Utils.join(GITLET_DIR, "objects");
+    static final File COMMIT_DIR = Utils.join(GITLET_DIR, "commit");
     static final File BRANCH_DIR = Utils.join(GITLET_DIR, "branches");
     static final File HEAD = Utils.join(GITLET_DIR, "HEAD");
     static final File STAGE = Utils.join(GITLET_DIR, "stage");
@@ -41,8 +42,9 @@ public class GitletRepository {
 
         // Initialize folders
         GITLET_DIR.mkdir();
-        OBJECTS_DIR.mkdirs();
-        BRANCH_DIR.mkdirs();
+        OBJECTS_DIR.mkdir();
+        BRANCH_DIR.mkdir();
+        COMMIT_DIR.mkdir();
 
         // Initialize files, head, master branches, stage
         HEAD.createNewFile();
@@ -245,7 +247,7 @@ public class GitletRepository {
 
 
     public static Commit getCommit(String sha1) {
-        File commit = getObjectFile(sha1);
+        File commit = Utils.join(COMMIT_DIR, sha1);
         if (!commit.exists() || !commit.isFile()) {
             throw Utils.error("No commit with that id exists.");
         }
@@ -272,7 +274,7 @@ public class GitletRepository {
      * Persistent commit
      */
     private static void persistentCommit(String sha1, Serializable obj) {
-        Utils.writeObject(getObjectFile(sha1), obj);
+        Utils.writeObject(Utils.join(COMMIT_DIR, sha1), obj);
     }
 
 
