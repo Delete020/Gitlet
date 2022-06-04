@@ -194,6 +194,9 @@ public class GitletRepository {
         }
     }
 
+    /**
+     * Print all the information of a commit object
+     */
     private static void displayCommitInfo(Commit commit, String commitSha1) {
         System.out.println("===");
         System.out.println("commit " + commitSha1);
@@ -203,6 +206,24 @@ public class GitletRepository {
         System.out.println("Date: " + commit.getTimestamp().withZoneSameInstant(ZoneOffset.systemDefault()).format(ZONE_DATE_TIME_FORMATTER));
         System.out.println(commit.getMessage());
         System.out.println();
+    }
+
+
+    /**
+     * Prints out the ids of all commits that have the given commit message
+     */
+    public static void find(String message) {
+        boolean exists = false;
+        for (String commitSha1 : Objects.requireNonNull(Utils.plainFilenamesIn(COMMIT_DIR))) {
+            Commit commit = getCommit(commitSha1);
+            if (commit.getMessage().contains(message)) {
+                System.out.println(commitSha1);
+                exists = true;
+            }
+        }
+        if (!exists) {
+            System.out.println("Found no commit with that message.");
+        }
     }
 
 

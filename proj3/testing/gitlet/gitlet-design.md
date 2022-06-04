@@ -118,6 +118,11 @@ The `GitletRepository` will handle all gitlet commands
 2. clear staging area
 3. update head or currently used branch to point to the new commit
 
+#### rm
+
+1. if file currently staged in addition, remove it from addition
+2. if file is not staged in addition, but tracked in the current head commit, add to stage removal map and delete it from the working directory 
+
 ## 4. Design Diagram
 
 Attach a picture of your design diagram illustrating the structure of your
