@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="finish find">
+    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="modify rm command">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/proj3/gitlet/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/proj3/gitlet/Stage.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Stage.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +86,7 @@
       <workItem from="1654163048029" duration="717000" />
       <workItem from="1654256295693" duration="12780000" />
       <workItem from="1654317434158" duration="303000" />
-      <workItem from="1654338821710" duration="17944000" />
+      <workItem from="1654338821710" duration="19026000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1653091748177</created>
@@ -167,7 +165,21 @@
       <option name="project" value="LOCAL" />
       <updated>1654350825683</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="finish status">
+      <created>1654357673563</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1654357673563</updated>
+    </task>
+    <task id="LOCAL-00013" summary="modify rm command">
+      <created>1654358129269</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1654358129269</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -196,6 +208,8 @@
     <MESSAGE value="Separate blobs and commit directories" />
     <MESSAGE value="finish global-log" />
     <MESSAGE value="finish find" />
-    <option name="LAST_COMMIT_MESSAGE" value="finish find" />
+    <MESSAGE value="finish status" />
+    <MESSAGE value="modify rm command" />
+    <option name="LAST_COMMIT_MESSAGE" value="modify rm command" />
   </component>
 </project>

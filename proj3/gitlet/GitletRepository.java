@@ -240,9 +240,7 @@ public class GitletRepository {
         for (String fileName : stageAdditionList.keySet()) {
             System.out.println(fileName);
             blobs.remove(fileName);
-            if (differentFile(fileName, stageAdditionList)) {
-                modifyList.add(fileName);
-            }
+            differentFile(fileName, stageAdditionList, modifyList);
         }
         System.out.println();
 
@@ -256,11 +254,7 @@ public class GitletRepository {
 
         // modify not staged file
         System.out.println("=== Modifications Not Staged For Commit ===");
-        for (String fileName : blobs.keySet()) {
-            if (differentFile(fileName, blobs)) {
-                modifyList.add(fileName);
-            }
-        }
+        blobs.keySet().forEach(fileName -> differentFile(fileName, blobs, modifyList));
         Collections.sort(modifyList);
         modifyList.forEach(System.out::println);
         System.out.println();
@@ -276,13 +270,16 @@ public class GitletRepository {
     }
 
 
-    private static boolean differentFile(String fileName, Map<String, String> compare) {
+    private static void differentFile(String fileName, Map<String, String> compare, List<String> modifyList) {
         File file = Utils.join(CWD, fileName);
         if (!file.exists()) {
-            return true;
+            modifyList.add(fileName + " (deleted)");
+            return;
         }
         String fileSha1 = Utils.sha1(fileName, Utils.readContentsAsString(file));
-        return !compare.get(fileName).equals(fileSha1);
+        if (!compare.get(fileName).equals(fileSha1)) {
+            modifyList.add(fileName + " (modified)");
+        }
     }
 
 
