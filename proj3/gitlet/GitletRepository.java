@@ -341,6 +341,8 @@ public class GitletRepository {
     }
 
 
+    /**
+     * Create new branch*/
     public static void branch(String branchName) throws IOException {
         File branchFile = Utils.join(BRANCH_DIR, branchName);
         if (branchFile.exists()) {
@@ -348,6 +350,21 @@ public class GitletRepository {
         }
         branchFile.createNewFile();
         Utils.writeContents(branchFile, getHeadSha1());
+    }
+
+
+    /**
+     * Remove a branch*/
+    public static void rmBranch(String branchName) {
+        if (branchName.equals(Utils.readContentsAsString(HEAD))) {
+            exitWithError("Cannot remove the current branch.");
+        }
+
+        File file = Utils.join(BRANCH_DIR, branchName);
+        if (!file.exists()) {
+            exitWithError("A branch with that name does not exist.");
+        }
+        file.delete();
     }
 
 
