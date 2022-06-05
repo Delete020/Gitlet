@@ -73,6 +73,10 @@ public class Main {
                 validateNumArgs(operands, 1);
                 GitletRepository.rmBranch(args[1]);
             }
+            case ("reset") -> {
+                validateNumArgs(operands, 1);
+                GitletRepository.reset(args[1]);
+            }
             default -> exitWithError("No command with that name exists.");
         }
     }

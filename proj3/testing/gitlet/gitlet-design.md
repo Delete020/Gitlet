@@ -123,6 +123,11 @@ The `GitletRepository` will handle all gitlet commands
 1. if file currently staged in addition, remove it from addition
 2. if file is not staged in addition, but tracked in the current head commit, add to stage removal map and delete it from the working directory 
 
+#### checkout
+
+1. if a commit id is given, restore the file to that commit version, which by default is to restore the file to the current commit version
+2. if a branch name is given and there are no untracked file and unstaged file in the working directory, delete all file in the working directory, and copy all file by the given branch commit  to tworking directory
+
 ## 4. Design Diagram
 
 Attach a picture of your design diagram illustrating the structure of your
