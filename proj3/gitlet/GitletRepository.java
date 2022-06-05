@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,7 +58,7 @@ public class GitletRepository {
         initialCommit.setTimestamp(ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC));
 
         // persistent commit
-        String commitSha1 = getSha1(initialCommit);
+        String commitSha1 = getObjectSha1(initialCommit);
         persistentCommit(commitSha1, initialCommit);
 
         // branches point to the fist commit
@@ -70,14 +71,8 @@ public class GitletRepository {
      * Adds a copy of the file as it currently exists to the staging area
      */
     public static void add(String fileName) throws IOException {
-        File file = Utils.join(CWD, fileName);
-        // Check the file exists in the working directory
-        if (!file.exists()) {
-            exitWithError("File does not exist.");
-        }
-
         Stage stage = Utils.readObject(STAGE, Stage.class);
-        stage.addFile(fileName, file);
+        stage.addFile(fileName);
         saveStage(stage);
     }
 
@@ -132,7 +127,7 @@ public class GitletRepository {
         }
 
         // Persistent new commit
-        String commitSha1 = getSha1(commit);
+        String commitSha1 = getObjectSha1(commit);
         persistentCommit(commitSha1, commit);
 
         // Update branch or head point to new commit
@@ -270,6 +265,9 @@ public class GitletRepository {
     }
 
 
+    /**
+     * Check the sha1 of file in working directory same as given map
+     */
     private static void differentFile(String fileName, Map<String, String> compare, List<String> modifyList) {
         File file = Utils.join(CWD, fileName);
         if (!file.exists()) {
@@ -279,6 +277,72 @@ public class GitletRepository {
         String fileSha1 = Utils.sha1(fileName, Utils.readContentsAsString(file));
         if (!compare.get(fileName).equals(fileSha1)) {
             modifyList.add(fileName + " (modified)");
+        }
+    }
+
+
+    /**
+     * Checkout of branch or file
+     * Updates the files in the working directory to match the version stored in given commit
+     * Restore the entire working directory to the version of the specified branch
+     */
+    public static void checkout(String... args) throws IOException {
+        Map<String, String> currentBlobs = getHead().getBlobs();
+        // if checkout a branch
+        if (args.length == 1) {
+            // failure if branch not exists
+            if (args[0].equals(Utils.readContentsAsString(HEAD))) {
+                exitWithError("No need to checkout the current branch.");
+            }
+
+            // failure if working directory had untracked file
+            List<String> workingDir = Utils.plainFilenamesIn(CWD);
+            if (workingDir.size() != currentBlobs.size()) {
+                exitWithError("here is an untracked file in the way; delete it, or add and commit it first.");
+            }
+
+            // failure if working directory had modified file
+            for (Map.Entry<String, String> entry : currentBlobs.entrySet()) {
+                File file = Utils.join(CWD, entry.getKey());
+                if (!file.exists() || entry.getValue().equals(getCwdFileSha1(file))) {
+                    exitWithError("here is an untracked file in the way; delete it, or add and commit it first.");
+                }
+            }
+
+            // delete all files in the working directory
+            workingDir.forEach(Utils::restrictedDelete);
+
+            // restore files to working directory
+            Map<String, String> blobs = getCommit(getBranchSha1(args[0])).getBlobs();
+            for (Map.Entry<String, String> entry : blobs.entrySet()) {
+                Files.copy(getObjectFile(entry.getValue()).toPath(), Utils.join(CWD, entry.getKey()).toPath());
+            }
+            // change current branch to the given branch
+            Utils.writeContents(HEAD, args[0]);
+            // clear staging area
+            saveStage(new Stage());
+        } else if("--".equals(args[0]) && args.length == 2) {
+            // takes the version of the file as it exists in the head commit
+            if (!currentBlobs.containsKey(args[1])) {
+                exitWithError("File does not exist in that commit.");
+            }
+
+            // delete file and copy
+            Utils.restrictedDelete(args[1]);
+            Files.copy(getObjectFile(currentBlobs.get(args[1])).toPath(), Utils.join(CWD, args[1]).toPath());
+        } else if ("--".equals(args[1]) && args.length == 3) {
+            // takes the version of the file as it exists in the commit with the given id
+            currentBlobs = getCommit(args[0]).getBlobs();
+            if (!currentBlobs.containsKey(args[2])) {
+                exitWithError("File does not exist in that commit.");
+            }
+
+            // delete file and copy
+            Utils.restrictedDelete(args[2]);
+            Files.copy(getObjectFile(currentBlobs.get(args[2])).toPath(), Utils.join(CWD, args[2]).toPath());
+        } else {
+            // command not correct
+            exitWithError("Incorrect operands.");
         }
     }
 
@@ -316,6 +380,9 @@ public class GitletRepository {
      */
     public static String getBranchSha1(String branch) {
         File branchFile = Utils.join(BRANCH_DIR, branch);
+        if (!branchFile.exists()) {
+            exitWithError("No such branch exists.");
+        }
         return Utils.readContentsAsString(branchFile);
     }
 
@@ -339,11 +406,25 @@ public class GitletRepository {
 
 
     public static Commit getCommit(String sha1) {
-        File commit = Utils.join(COMMIT_DIR, sha1);
-        if (!commit.exists() || !commit.isFile()) {
+        String commitFileName = sha1;
+        // find the specified commit by a few prefixes sha1
+        if (sha1.length() != Utils.UID_LENGTH) {
+            int length = sha1.length();
+            for (String fileName : Objects.requireNonNull(Utils.plainFilenamesIn(COMMIT_DIR))) {
+                if (fileName.substring(0, length).equals(sha1)) {
+                    commitFileName = fileName;
+                }
+            }
+            if (commitFileName.length() == length) {
+                throw Utils.error("No commit with that id exists.");
+            }
+        }
+
+        File commitFile = Utils.join(COMMIT_DIR, commitFileName);
+        if (!commitFile.exists() || !commitFile.isFile()) {
             throw Utils.error("No commit with that id exists.");
         }
-        return Utils.readObject(commit, Commit.class);
+        return Utils.readObject(commitFile, Commit.class);
     }
 
 
@@ -357,10 +438,17 @@ public class GitletRepository {
     /**
      * Returns the SHA-1 hash of the concatenation of object
      */
-    private static String getSha1(Serializable obj) {
+    private static String getObjectSha1(Serializable obj) {
         return Utils.sha1(Utils.serialize(obj));
     }
 
+    private static String getCwdFileSha1(String fileName) {
+        return getCwdFileSha1(Utils.join(CWD, fileName));
+    }
+
+    private static String getCwdFileSha1(File file) {
+        return Utils.sha1(file.getName(), Utils.readContents(file));
+    }
 
     /**
      * Persistent commit

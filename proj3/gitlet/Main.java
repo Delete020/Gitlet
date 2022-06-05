@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static gitlet.GitletRepository.exitWithError;
 
@@ -58,6 +59,11 @@ public class Main {
             case ("status") -> {
                 validateNumArgs(operands, 0);
                 GitletRepository.status();
+            }
+            case ("checkout") -> {
+                validateNumArgs(operands, 1, 3);
+                // remove first arg
+                GitletRepository.checkout(Arrays.stream(args).skip(1).toArray(String[]::new));
             }
             default -> exitWithError("No command with that name exists.");
         }

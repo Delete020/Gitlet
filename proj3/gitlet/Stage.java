@@ -7,6 +7,9 @@ import java.nio.file.Files;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static gitlet.GitletRepository.CWD;
+import static gitlet.GitletRepository.exitWithError;
+
 /**
  * @author Delete020
  * @since 5/30/22 9:14 PM
@@ -40,9 +43,14 @@ public class Stage implements Serializable {
      * Copy files from the working directory to the staging area
      *
      * @param fileName File name
-     * @param file     Working directory file
      */
-    public void addFile(String fileName, File file) throws IOException {
+    public void addFile(String fileName) throws IOException {
+        File file = Utils.join(CWD, fileName);
+        // Check the file exists in the working directory
+        if (!file.exists()) {
+            exitWithError("File does not exist.");
+        }
+
         String stageFileSha1 = Utils.sha1(fileName, Utils.readContents(file));
         File stageFile = GitletRepository.getObjectFile(stageFileSha1);
 
@@ -81,7 +89,7 @@ public class Stage implements Serializable {
             removalMap.put(fileName, blobs.get(fileName));
             Utils.restrictedDelete(fileName);
         } else {
-            GitletRepository.exitWithError("No reason to remove the file.");
+            exitWithError("No reason to remove the file.");
         }
     }
 
