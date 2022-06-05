@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="update status command">
+    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="finish checkout">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/proj3/gitlet/Stage.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Stage.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +88,7 @@
       <workItem from="1654256295693" duration="12780000" />
       <workItem from="1654317434158" duration="303000" />
       <workItem from="1654338821710" duration="20031000" />
-      <workItem from="1654402060913" duration="7636000" />
+      <workItem from="1654402060913" duration="9556000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1653091748177</created>
@@ -189,7 +188,14 @@
       <option name="project" value="LOCAL" />
       <updated>1654358873683</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="finish checkout">
+      <created>1654410193294</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1654410193294</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -221,6 +227,7 @@
     <MESSAGE value="finish status" />
     <MESSAGE value="modify rm command" />
     <MESSAGE value="update status command" />
-    <option name="LAST_COMMIT_MESSAGE" value="update status command" />
+    <MESSAGE value="finish checkout" />
+    <option name="LAST_COMMIT_MESSAGE" value="finish checkout" />
   </component>
 </project>

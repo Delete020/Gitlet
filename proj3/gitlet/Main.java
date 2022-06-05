@@ -65,6 +65,10 @@ public class Main {
                 // remove first arg
                 GitletRepository.checkout(Arrays.stream(args).skip(1).toArray(String[]::new));
             }
+            case ("branch") -> {
+                validateNumArgs(operands, 1);
+                GitletRepository.branch(args[1]);
+            }
             default -> exitWithError("No command with that name exists.");
         }
     }

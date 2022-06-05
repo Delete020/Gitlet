@@ -295,22 +295,16 @@ public class GitletRepository {
                 exitWithError("No need to checkout the current branch.");
             }
 
-            // failure if working directory had untracked file
-            List<String> workingDir = Utils.plainFilenamesIn(CWD);
-            if (workingDir.size() != currentBlobs.size()) {
-                exitWithError("here is an untracked file in the way; delete it, or add and commit it first.");
-            }
-
             // failure if working directory had modified file
             for (Map.Entry<String, String> entry : currentBlobs.entrySet()) {
                 File file = Utils.join(CWD, entry.getKey());
-                if (!file.exists() || entry.getValue().equals(getCwdFileSha1(file))) {
+                if (!file.exists() || !entry.getValue().equals(getCwdFileSha1(file))) {
                     exitWithError("here is an untracked file in the way; delete it, or add and commit it first.");
                 }
             }
 
             // delete all files in the working directory
-            workingDir.forEach(Utils::restrictedDelete);
+            currentBlobs.keySet().forEach(Utils::restrictedDelete);
 
             // restore files to working directory
             Map<String, String> blobs = getCommit(getBranchSha1(args[0])).getBlobs();
@@ -347,8 +341,13 @@ public class GitletRepository {
     }
 
 
-    public static void branch() {
-
+    public static void branch(String branchName) throws IOException {
+        File branchFile = Utils.join(BRANCH_DIR, branchName);
+        if (branchFile.exists()) {
+            exitWithError("A branch with that name already exists.");
+        }
+        branchFile.createNewFile();
+        Utils.writeContents(branchFile, getHeadSha1());
     }
 
 
