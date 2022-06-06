@@ -438,7 +438,7 @@ public class GitletRepository {
 
         // get current head blob, ancestor blobs, merge branch blobs
         String branchCommitSha1 = getBranchSha1(branchName);
-        Map<String, String> spilt = Objects.requireNonNull(commonAncestor(branchCommitSha1)).getBlobs();
+        Map<String, String> spilt = Objects.requireNonNull(commonAncestor(branchCommitSha1, branchName)).getBlobs();
         Map<String, String> head = getHead().getBlobs();
         Map<String, String> branch = getCommit(branchCommitSha1).getBlobs();
         // use to save result blobs
@@ -502,39 +502,71 @@ public class GitletRepository {
 
 
     /**
-     * Given a sha1 of commit, find the common commit with current head commit*/
-    private static Commit commonAncestor(String mergeSha1) {
+     * Given a sha1 of commit, find the latest common commit with current head commit
+     */
+    private static Commit commonAncestor(String mergeSha1, String branchName) throws IOException {
         String currentSha1 = getHeadSha1();
         if (currentSha1.equals(mergeSha1)) {
             exitWithError("Cannot merge a branch with itself.");
         }
 
-        Set<String> mergeSet = new HashSet<>();
-        String sha1 = currentSha1;
-        while (sha1 != null) {
-            // if given commit sha1 is ancestor, exit
-            if (sha1.equals(mergeSha1)) {
-                exitWithError("Given branch is an ancestor of the current branch.");
-            }
-            Commit commit = getCommit(sha1);
-            mergeSet.add(sha1);
-            sha1 = commit.getParent();
+        // get current commit tree
+        Map<String, Integer> currentCommitMap = new HashMap<>();
+        dfs(currentSha1, currentCommitMap, 0);
+        if (currentCommitMap.containsKey(mergeSha1)) {
+            exitWithError("Given branch is an ancestor of the current branch.");
         }
 
-        sha1 = mergeSha1;
-        while (sha1 != null) {
-            // if given commit sha1 is ancestor, exit
-            if (sha1.equals(currentSha1)) {
-                exitWithError("Current branch fast-forwarded.");
+        // get merge commit tree
+        Queue<String> queue = new LinkedList<>();
+        queue.add(mergeSha1);
+        // record latest
+        int minDistance = Integer.MAX_VALUE;
+        Commit latestAncestor = null;
+
+        // BFS, search the common ancestor
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                String sha1 = queue.poll();
+                if (Objects.equals(sha1, currentSha1)) {
+                    checkout(branchName);
+                    exitWithError("Current branch fast-forwarded.");
+                }
+                Commit commit = getCommit(sha1);
+                // select the closest
+                if (currentCommitMap.containsKey(sha1)) {
+                    int distance = currentCommitMap.get(sha1);
+                    if (distance < minDistance) {
+                        latestAncestor = commit;
+                        minDistance = distance;
+                    }
+                }
+                if (commit.getParent() != null) {
+                    queue.add(commit.getParent());
+                }
+                if (commit.getMergeFrom() != null) {
+                    queue.add(commit.getMergeFrom());
+                }
             }
-            Commit commit = getCommit(sha1);
-            if (mergeSet.contains(sha1)) {
-                return commit;
-            }
-            sha1 = commit.getParent();
         }
 
-        return null;
+        return latestAncestor;
+    }
+
+
+    /**
+     * Deep first search, for traverse commit tree
+     */
+    private static void dfs(String sha1, Map<String, Integer> commitMap, int depth) {
+        if (sha1 == null) {
+            return;
+        }
+        Commit commit = getCommit(sha1);
+        commitMap.put(sha1, depth);
+        depth++;
+        dfs(commit.getParent(), commitMap, depth);
+        dfs(commit.getMergeFrom(), commitMap, depth);
     }
 
 
@@ -630,6 +662,9 @@ public class GitletRepository {
     }
 
 
+    /**
+     * Return sah1 string of files in working directory
+     */
     private static String getCwdFileSha1(String filename) {
         return getCwdFileSha1(Utils.join(CWD, filename));
     }
