@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="finish rm-branch">
+    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="finish reset, checkout bug fix, fix a typo">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/GitletRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/proj3/testing/gitlet/gitlet-design.md" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/testing/gitlet/gitlet-design.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +88,9 @@
       <workItem from="1654256295693" duration="12780000" />
       <workItem from="1654317434158" duration="303000" />
       <workItem from="1654338821710" duration="20031000" />
-      <workItem from="1654402060913" duration="23653000" />
+      <workItem from="1654402060913" duration="31122000" />
+      <workItem from="1654491550483" duration="604000" />
+      <workItem from="1654503569588" duration="14919000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1653091748177</created>
@@ -210,7 +211,14 @@
       <option name="project" value="LOCAL" />
       <updated>1654414070846</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="finish reset, checkout bug fix, fix a typo">
+      <created>1654432494638</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1654432494638</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -245,6 +253,7 @@
     <MESSAGE value="finish checkout" />
     <MESSAGE value="finish branch" />
     <MESSAGE value="finish rm-branch" />
-    <option name="LAST_COMMIT_MESSAGE" value="finish rm-branch" />
+    <MESSAGE value="finish reset, checkout bug fix, fix a typo" />
+    <option name="LAST_COMMIT_MESSAGE" value="finish reset, checkout bug fix, fix a typo" />
   </component>
 </project>

@@ -114,12 +114,10 @@ public class GitletRepository {
             blobs.remove(filename);
         }
 
-        // clear staging area, then persistent stage
-        stage.getAdditionMap().clear();
-        stage.getRemovalMap().clear();
-        saveStage(stage);
+        // clear staging area
+        saveStage(new Stage());
 
-        // Remove the files removed by the system rm command
+        // Remove the files that removed by the system rm command
         for (String blobsFile : blobs.keySet()) {
             if (!Utils.join(CWD, blobsFile).exists()) {
                 blobs.remove(blobsFile);
@@ -341,7 +339,7 @@ public class GitletRepository {
         restoreVersion(headBlobs, commit);
 
         // move branch
-        File branchFile= Utils.join(BRANCH_DIR, Utils.readContentsAsString(HEAD));
+        File branchFile = Utils.join(BRANCH_DIR, Utils.readContentsAsString(HEAD));
         if (branchFile.exists()) {
             Utils.writeContents(branchFile, commit);
         } else {
@@ -362,23 +360,38 @@ public class GitletRepository {
             }
         }
 
-        // delete all files in the working directory
-        headBlobs.keySet().forEach(Utils::restrictedDelete);
-
         // restore files to working directory
         Map<String, String> commitBlobs = getCommit(commitSha1).getBlobs();
-        for (Map.Entry<String, String> entry : commitBlobs.entrySet()) {
-            File file = Utils.join(CWD, entry.getKey());
-            // check working file is untracked, but have same filename of restore commit
+        restoreWorkingDirectory(commitBlobs, headBlobs);
+    }
+
+
+    /**
+     * Clear working directory file, then copy given blobs files to working directory
+     */
+    private static void restoreWorkingDirectory(Map<String, String> restoreBlobs, Map<String, String> currentBlobs) throws IOException {
+        //in order to not overwrite untracked files, check working file is untracked, but have same filename of restore commit
+        Map<String, String> differBlobs = new TreeMap<>(restoreBlobs);
+        currentBlobs.keySet().forEach(differBlobs::remove);
+        for (String filename : differBlobs.keySet()) {
+            File file = Utils.join(CWD, filename);
             if (file.exists()) {
                 exitWithError("here is an untracked file in the way; delete it, or add and commit it first.");
             }
+        }
+
+        // delete all files in the working directory
+        currentBlobs.keySet().forEach(Utils::restrictedDelete);
+
+        for (Map.Entry<String, String> entry : restoreBlobs.entrySet()) {
+            File file = Utils.join(CWD, entry.getKey());
             Files.copy(getObjectFile(entry.getValue()).toPath(), file.toPath());
         }
 
         // clear staging area
         saveStage(new Stage());
     }
+
 
     /**
      * Create new branch
@@ -410,6 +423,122 @@ public class GitletRepository {
 
 
     /**
+     * Merges files from the given branch into the current branch.
+     */
+    public static void merge(String branchName) throws IOException {
+        // error, staging area is not empty
+        Stage stage = getStage();
+        if (!(stage.getAdditionMap().isEmpty() && stage.getRemovalMap().isEmpty())) {
+            exitWithError("You have uncommitted changes.");
+        }
+        // error, branch not exists
+        if (!Utils.join(BRANCH_DIR, branchName).exists()) {
+            exitWithError("A branch with that name does not exist.");
+        }
+
+        // get current head blob, ancestor blobs, merge branch blobs
+        String branchCommitSha1 = getBranchSha1(branchName);
+        Map<String, String> spilt = Objects.requireNonNull(commonAncestor(branchCommitSha1)).getBlobs();
+        Map<String, String> head = getHead().getBlobs();
+        Map<String, String> branch = getCommit(branchCommitSha1).getBlobs();
+        // use to save result blobs
+        Map<String, String> blobs = new TreeMap<>(spilt);
+        blobs.putAll(head);
+        blobs.putAll(branch);
+
+        // choose which version should save to merge version
+        for (String filename : blobs.keySet()) {
+            // get file sha1
+            String spiltSha1 = spilt.get(filename);
+            String headSha1 = head.get(filename);
+            String branchSha1 = branch.get(filename);
+
+            // check file is different with ancestor
+            boolean isHeadModify = !Objects.equals(headSha1, spiltSha1);
+            boolean isBranchModify = !Objects.equals(branchSha1, spiltSha1);
+            // save correct version file
+            if ((isHeadModify && !isBranchModify) || Objects.equals(headSha1, branchSha1)) {
+                if (headSha1 == null) {
+                    spilt.remove(filename);
+                } else {
+                    spilt.put(filename, headSha1);
+                }
+            } else if (!isHeadModify && isBranchModify) {
+                if (branchSha1 == null) {
+                    spilt.remove(filename);
+                } else {
+                    spilt.put(filename, branchSha1);
+                }
+            } else {
+                // replace the contents of the conflicted file
+                String currentContent = headSha1 == null ? "" : Utils.readContentsAsString(getObjectFile(headSha1));
+                String branchContent = branchSha1 == null ? "" : Utils.readContentsAsString(getObjectFile(branchSha1));
+                String fileContent = "<<<<<<< HEAD\n" + currentContent + "=======\n" + branchContent + ">>>>>>>\n";
+                String fileSha1 = Utils.sha1(filename, fileContent);
+                Utils.writeContents(getObjectFile(fileSha1), fileContent);
+                spilt.put(filename, fileSha1);
+                System.out.println("Encountered a merge conflict.");
+            }
+        }
+
+        // copy merge version files to working directory
+        restoreWorkingDirectory(spilt, head);
+
+        // create merge commit
+        String commitMessage = "Merged " + branchName + " into " + Utils.readContentsAsString(HEAD) + ".";
+        Commit mergeCommit = new Commit(commitMessage, getHeadSha1(), branchCommitSha1);
+        mergeCommit.setBlobs(spilt);
+        String mergeCommitSha1 = getObjectSha1(mergeCommit);
+        persistentCommit(mergeCommitSha1, mergeCommit);
+
+        // update branch
+        File headBranch = Utils.join(BRANCH_DIR, Utils.readContentsAsString(HEAD));
+        if (headBranch.exists()) {
+            Utils.writeContents(headBranch, mergeCommitSha1);
+        } else {
+            Utils.writeContents(HEAD, mergeCommitSha1);
+        }
+    }
+
+
+    /**
+     * Given a sha1 of commit, find the common commit with current head commit*/
+    private static Commit commonAncestor(String mergeSha1) {
+        String currentSha1 = getHeadSha1();
+        if (currentSha1.equals(mergeSha1)) {
+            exitWithError("Cannot merge a branch with itself.");
+        }
+
+        Set<String> mergeSet = new HashSet<>();
+        String sha1 = currentSha1;
+        while (sha1 != null) {
+            // if given commit sha1 is ancestor, exit
+            if (sha1.equals(mergeSha1)) {
+                exitWithError("Given branch is an ancestor of the current branch.");
+            }
+            Commit commit = getCommit(sha1);
+            mergeSet.add(sha1);
+            sha1 = commit.getParent();
+        }
+
+        sha1 = mergeSha1;
+        while (sha1 != null) {
+            // if given commit sha1 is ancestor, exit
+            if (sha1.equals(currentSha1)) {
+                exitWithError("Current branch fast-forwarded.");
+            }
+            Commit commit = getCommit(sha1);
+            if (mergeSet.contains(sha1)) {
+                return commit;
+            }
+            sha1 = commit.getParent();
+        }
+
+        return null;
+    }
+
+
+    /**
      * Prints out MESSAGE and exits with error code 0.
      *
      * @param message message to print
@@ -421,6 +550,7 @@ public class GitletRepository {
         System.exit(0);
     }
 
+
     /**
      * Returns the sha1 string of the commit pointed to by HEAD
      */
@@ -431,6 +561,7 @@ public class GitletRepository {
         }
         return headContent;
     }
+
 
     /**
      * Returns the sha1 string of the commit pointed to by the specified branch
@@ -490,6 +621,7 @@ public class GitletRepository {
         return Utils.readObject(STAGE, Stage.class);
     }
 
+
     /**
      * Returns the SHA-1 hash of the concatenation of object
      */
@@ -497,13 +629,16 @@ public class GitletRepository {
         return Utils.sha1(Utils.serialize(obj));
     }
 
+
     private static String getCwdFileSha1(String filename) {
         return getCwdFileSha1(Utils.join(CWD, filename));
     }
 
+
     private static String getCwdFileSha1(File file) {
         return Utils.sha1(file.getName(), Utils.readContents(file));
     }
+
 
     /**
      * Persistent commit
@@ -518,7 +653,7 @@ public class GitletRepository {
      */
     public static File getObjectFile(String sha1) {
         if (sha1 == null || sha1.isEmpty()) {
-            throw Utils.error("sha1 is null, can't get object");
+            return null;
         }
         File dir = Utils.join(GitletRepository.OBJECTS_DIR, sha1.substring(0, 2));
         if (!dir.exists()) {

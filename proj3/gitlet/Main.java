@@ -77,6 +77,10 @@ public class Main {
                 validateNumArgs(operands, 1);
                 GitletRepository.reset(args[1]);
             }
+            case ("merge") -> {
+                validateNumArgs(operands, 1);
+                GitletRepository.merge(args[1]);
+            }
             default -> exitWithError("No command with that name exists.");
         }
     }
