@@ -13,7 +13,7 @@ import java.util.*;
  * @author Delete020
  * @since 5/25/22 9:57 PM
  * <p>
- * The structure of a Capers Repository is as follows:
+ * The structure of a Gitlet Repository is as follows:
  * <p>
  * .gitlet/ -- top level folder for all persistent data
  * - objects/ -- folder containing all of the persistent data for commits and blobs
@@ -22,20 +22,29 @@ import java.util.*;
  */
 public class GitletRepository {
 
-    static final String CWD = System.getProperty("user.dir");
-    static final File GITLET_DIR = Utils.join(CWD, ".gitlet");
-    static final File OBJECTS_DIR = Utils.join(GITLET_DIR, "objects");
-    static final File COMMIT_DIR = Utils.join(GITLET_DIR, "commit");
-    static final File BRANCH_DIR = Utils.join(GITLET_DIR, "branches");
-    static final File HEAD = Utils.join(GITLET_DIR, "HEAD");
-    static final File STAGE = Utils.join(GITLET_DIR, "stage");
+    private String CWD = System.getProperty("user.dir");
+    private final String GITLET_NAME = ".gitlet";
+    private final File GITLET_DIR = Utils.join(CWD, GITLET_NAME);
+    private final File OBJECTS_DIR = Utils.join(GITLET_DIR, "objects");
+    private final File COMMIT_DIR = Utils.join(GITLET_DIR, "commit");
+    private final File BRANCH_DIR = Utils.join(GITLET_DIR, "branches");
+    private final File HEAD = Utils.join(GITLET_DIR, "HEAD");
+    private final File STAGE = Utils.join(GITLET_DIR, "stage");
+    private final File REMOTE_DIR = Utils.join(GITLET_DIR, "remote");
+    private final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z");
 
-    static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z");
+
+    public GitletRepository() {
+    }
+
+    public GitletRepository(String CWD) {
+        this.CWD = CWD;
+    }
 
     /**
      * Creates a new Gitlet version-control system in the current directory.
      */
-    public static void init() throws IOException {
+    public void init() throws IOException {
         // If there is already a Gitlet version-control system in the current directory
         if (GITLET_DIR.exists()) {
             exitWithError("A Gitlet version-control system already exists in the current directory.");
@@ -46,6 +55,7 @@ public class GitletRepository {
         OBJECTS_DIR.mkdir();
         BRANCH_DIR.mkdir();
         COMMIT_DIR.mkdir();
+        REMOTE_DIR.mkdir();
 
         // Initialize files, head, master branches, stage
         HEAD.createNewFile();
@@ -70,9 +80,40 @@ public class GitletRepository {
     /**
      * Adds a copy of the file as it currently exists to the staging area
      */
-    public static void add(String filename) throws IOException {
+    public void add(String filename) throws IOException {
+        // Get stage object
         Stage stage = Utils.readObject(STAGE, Stage.class);
-        stage.addFile(filename);
+        Map<String, String> additionMap = stage.getAdditionMap();
+        Map<String, String> removalMap = stage.getRemovalMap();
+
+        // Get working directory file
+        File file = Utils.join(CWD, filename);
+        // Check the file exists in the working directory
+        if (!file.exists()) {
+            exitWithError("File does not exist.");
+        }
+
+        String addFileSha1 = Utils.sha1(filename, Utils.readContents(file));
+        File stageFile = getObjectFile(addFileSha1);
+
+        removalMap.remove(filename);
+
+        // The file is identical to the parent commit file or not
+        String parentVersion = getHead().getBlobs().get(filename);
+        if (parentVersion != null && parentVersion.equals(addFileSha1)) {
+            // Remove it from the staging area， if a file changed, added, and then changed back
+            additionMap.remove(filename);
+        } else {
+            additionMap.put(filename, addFileSha1);
+        }
+
+        // File already exists in the staging area, do nothing
+        if (!stageFile.exists()) {
+            // Copy file to staging area
+            Files.copy(file.toPath(), stageFile.toPath());
+        }
+
+        // persistent stage object
         saveStage(stage);
     }
 
@@ -80,7 +121,7 @@ public class GitletRepository {
     /**
      * Saves a snapshot of tracked files
      */
-    public static void commit(String message) {
+    public void commit(String message) {
         // Commit must have a non-blank message.
         if (message.isEmpty()) {
             exitWithError("Please enter a commit message.");
@@ -141,9 +182,26 @@ public class GitletRepository {
     /**
      * Remove file from staging area or current working directory
      */
-    public static void rm(String filename) {
+    public void rm(String filename) {
+        // get stage object
         Stage stage = getStage();
-        stage.removeFile(filename);
+        Map<String, String> additionMap = stage.getAdditionMap();
+        Map<String, String> removalMap = stage.getRemovalMap();
+
+        // get current head blobs
+        Map<String, String> blobs = getHead().getBlobs();
+
+        // Two cases, file currently staged or in the current commit, otherwise error
+        if (additionMap.containsKey(filename)) {
+            additionMap.remove(filename);
+        } else if (blobs.containsKey(filename)) {
+            removalMap.put(filename, blobs.get(filename));
+            Utils.restrictedDelete(filename);
+        } else {
+            exitWithError("No reason to remove the file.");
+        }
+
+        // persistent stage object
         saveStage(stage);
     }
 
@@ -151,7 +209,7 @@ public class GitletRepository {
     /**
      * Display information about each commit backwards along the commit tree until the initial commit.
      */
-    public static void log() {
+    public void log() {
         String sha1 = getHeadSha1();
         Commit commit;
 
@@ -166,7 +224,7 @@ public class GitletRepository {
     /**
      * Display information about all commits ever made
      */
-    public static void globalLog() {
+    public void globalLog() {
         for (String commitSha1 : Objects.requireNonNull(Utils.plainFilenamesIn(COMMIT_DIR))) {
             Commit commit = getCommit(commitSha1);
             displayCommitInfo(commit, commitSha1);
@@ -176,7 +234,7 @@ public class GitletRepository {
     /**
      * Print all the information of a commit object
      */
-    private static void displayCommitInfo(Commit commit, String commitSha1) {
+    private void displayCommitInfo(Commit commit, String commitSha1) {
         System.out.println("===");
         System.out.println("commit " + commitSha1);
         if (commit.getMergeFrom() != null) {
@@ -191,7 +249,7 @@ public class GitletRepository {
     /**
      * Prints out the ids of all commits that have the given commit message
      */
-    public static void find(String message) {
+    public void find(String message) {
         boolean exists = false;
         for (String commitSha1 : Objects.requireNonNull(Utils.plainFilenamesIn(COMMIT_DIR))) {
             Commit commit = getCommit(commitSha1);
@@ -209,7 +267,7 @@ public class GitletRepository {
     /**
      * Display current branch information
      */
-    public static void status() {
+    public void status() {
         // branch status
         String headContent = Utils.readContentsAsString(HEAD);
         System.out.println("=== Branches ===");
@@ -226,7 +284,7 @@ public class GitletRepository {
         // get staging area and head commit blobs
         Map<String, String> blobs = getHead().getBlobs();
         Stage stage = getStage();
-        TreeMap<String, String> stageAdditionList = stage.getAdditionMap();
+        Map<String, String> stageAdditionList = stage.getAdditionMap();
         List<String> modifyList = new ArrayList<>();
         // staged file
         System.out.println("=== Staged Files ===");
@@ -266,7 +324,7 @@ public class GitletRepository {
     /**
      * Check the sha1 of file in working directory same as given map
      */
-    private static void differentFile(String filename, Map<String, String> compare, List<String> modifyList) {
+    private void differentFile(String filename, Map<String, String> compare, List<String> modifyList) {
         File file = Utils.join(CWD, filename);
         if (!file.exists()) {
             modifyList.add(filename + " (deleted)");
@@ -284,7 +342,7 @@ public class GitletRepository {
      * Updates the files in the working directory to match the version stored in given commit
      * Restore the entire working directory to the version of the specified branch
      */
-    public static void checkout(String... args) throws IOException {
+    public void checkout(String... args) throws IOException {
         Map<String, String> currentBlobs = getHead().getBlobs();
         // if checkout a branch
         if (args.length == 1) {
@@ -328,7 +386,7 @@ public class GitletRepository {
      * Remove current working directory files,
      * restore previous version and moves the current branch's head to that commit node
      */
-    public static void reset(String commitId) throws IOException {
+    public void reset(String commitId) throws IOException {
         if (Utils.join(BRANCH_DIR, commitId).exists()) {
             exitWithError("No commit with that id exists.");
         }
@@ -351,7 +409,7 @@ public class GitletRepository {
     /**
      * Restore working directory to the given commit version
      */
-    private static void restoreVersion(Map<String, String> headBlobs, String commitSha1) throws IOException {
+    private void restoreVersion(Map<String, String> headBlobs, String commitSha1) throws IOException {
         // failure if working directory had modified file
         for (Map.Entry<String, String> entry : headBlobs.entrySet()) {
             File file = Utils.join(CWD, entry.getKey());
@@ -369,7 +427,7 @@ public class GitletRepository {
     /**
      * Clear working directory file, then copy given blobs files to working directory
      */
-    private static void restoreWorkingDirectory(Map<String, String> restoreBlobs, Map<String, String> currentBlobs) throws IOException {
+    private void restoreWorkingDirectory(Map<String, String> restoreBlobs, Map<String, String> currentBlobs) throws IOException {
         //in order to not overwrite untracked files, check working file is untracked, but have same filename of restore commit
         Map<String, String> differBlobs = new TreeMap<>(restoreBlobs);
         currentBlobs.keySet().forEach(differBlobs::remove);
@@ -396,7 +454,7 @@ public class GitletRepository {
     /**
      * Create new branch
      */
-    public static void branch(String branchName) throws IOException {
+    public void branch(String branchName) throws IOException {
         File branchFile = Utils.join(BRANCH_DIR, branchName);
         if (branchFile.exists()) {
             exitWithError("A branch with that name already exists.");
@@ -409,7 +467,7 @@ public class GitletRepository {
     /**
      * Remove a branch
      */
-    public static void rmBranch(String branchName) {
+    public void rmBranch(String branchName) {
         if (branchName.equals(Utils.readContentsAsString(HEAD))) {
             exitWithError("Cannot remove the current branch.");
         }
@@ -425,7 +483,7 @@ public class GitletRepository {
     /**
      * Merges files from the given branch into the current branch.
      */
-    public static void merge(String branchName) throws IOException {
+    public void merge(String branchName) throws IOException {
         // error, staging area is not empty
         Stage stage = getStage();
         if (!(stage.getAdditionMap().isEmpty() && stage.getRemovalMap().isEmpty())) {
@@ -471,10 +529,12 @@ public class GitletRepository {
                 }
             } else {
                 // replace the contents of the conflicted file
+                // create file content
                 String currentContent = headSha1 == null ? "" : Utils.readContentsAsString(getObjectFile(headSha1));
                 String branchContent = branchSha1 == null ? "" : Utils.readContentsAsString(getObjectFile(branchSha1));
                 String fileContent = "<<<<<<< HEAD\n" + currentContent + "=======\n" + branchContent + ">>>>>>>\n";
                 String fileSha1 = Utils.sha1(filename, fileContent);
+                // save file to object directory
                 Utils.writeContents(getObjectFile(fileSha1), fileContent);
                 spilt.put(filename, fileSha1);
                 System.out.println("Encountered a merge conflict.");
@@ -504,7 +564,7 @@ public class GitletRepository {
     /**
      * Given a sha1 of commit, find the latest common commit with current head commit
      */
-    private static Commit commonAncestor(String mergeSha1, String branchName) throws IOException {
+    private Commit commonAncestor(String mergeSha1, String branchName) throws IOException {
         String currentSha1 = getHeadSha1();
         if (currentSha1.equals(mergeSha1)) {
             exitWithError("Cannot merge a branch with itself.");
@@ -558,7 +618,7 @@ public class GitletRepository {
     /**
      * Deep first search, for traverse commit tree
      */
-    private static void dfs(String sha1, Map<String, Integer> commitMap, int depth) {
+    private void dfs(String sha1, Map<String, Integer> commitMap, int depth) {
         if (sha1 == null) {
             return;
         }
@@ -586,7 +646,7 @@ public class GitletRepository {
     /**
      * Returns the sha1 string of the commit pointed to by HEAD
      */
-    public static String getHeadSha1() {
+    public String getHeadSha1() {
         String headContent = Utils.readContentsAsString(HEAD);
         if (Utils.join(BRANCH_DIR, headContent).exists()) {
             return getBranchSha1(headContent);
@@ -598,7 +658,7 @@ public class GitletRepository {
     /**
      * Returns the sha1 string of the commit pointed to by the specified branch
      */
-    public static String getBranchSha1(String branch) {
+    public String getBranchSha1(String branch) {
         File branchFile = Utils.join(BRANCH_DIR, branch);
         if (!branchFile.exists()) {
             exitWithError("No such branch exists.");
@@ -607,7 +667,7 @@ public class GitletRepository {
     }
 
 
-    public static String getCommitSha1(String shortSha1) {
+    public String getCommitSha1(String shortSha1) {
         int length = shortSha1.length();
         for (String sha1 : Objects.requireNonNull(Utils.plainFilenamesIn(COMMIT_DIR))) {
             if (sha1.substring(0, length).equals(shortSha1)) {
@@ -622,7 +682,7 @@ public class GitletRepository {
     /**
      * Get the object of the branch or commit pointed to by head
      */
-    public static Commit getHead() {
+    public Commit getHead() {
         String headCommitSha1 = getHeadSha1();
         return getCommit(headCommitSha1);
     }
@@ -631,13 +691,13 @@ public class GitletRepository {
     /**
      * Get the commit object that the branch points to
      */
-    public static Commit getBranch(String branch) {
+    public Commit getBranch(String branch) {
         String branchCommitSha1 = getBranchSha1(branch);
         return getCommit(branchCommitSha1);
     }
 
 
-    public static Commit getCommit(String sha1) {
+    public Commit getCommit(String sha1) {
         File commitFile = Utils.join(COMMIT_DIR, sha1);
         if (!commitFile.exists() || !commitFile.isFile()) {
             exitWithError("No commit with that id exists.");
@@ -649,7 +709,7 @@ public class GitletRepository {
     /**
      * Get the staging area object
      */
-    public static Stage getStage() {
+    public Stage getStage() {
         return Utils.readObject(STAGE, Stage.class);
     }
 
@@ -657,7 +717,7 @@ public class GitletRepository {
     /**
      * Returns the SHA-1 hash of the concatenation of object
      */
-    private static String getObjectSha1(Serializable obj) {
+    private String getObjectSha1(Serializable obj) {
         return Utils.sha1(Utils.serialize(obj));
     }
 
@@ -665,12 +725,12 @@ public class GitletRepository {
     /**
      * Return sah1 string of files in working directory
      */
-    private static String getCwdFileSha1(String filename) {
+    private String getCwdFileSha1(String filename) {
         return getCwdFileSha1(Utils.join(CWD, filename));
     }
 
 
-    private static String getCwdFileSha1(File file) {
+    private String getCwdFileSha1(File file) {
         return Utils.sha1(file.getName(), Utils.readContents(file));
     }
 
@@ -678,7 +738,7 @@ public class GitletRepository {
     /**
      * Persistent commit
      */
-    private static void persistentCommit(String sha1, Serializable obj) {
+    private void persistentCommit(String sha1, Serializable obj) {
         Utils.writeObject(Utils.join(COMMIT_DIR, sha1), obj);
     }
 
@@ -686,11 +746,11 @@ public class GitletRepository {
     /**
      * Get the file directory of the commit or blob
      */
-    public static File getObjectFile(String sha1) {
+    public File getObjectFile(String sha1) {
         if (sha1 == null || sha1.isEmpty()) {
             return null;
         }
-        File dir = Utils.join(GitletRepository.OBJECTS_DIR, sha1.substring(0, 2));
+        File dir = Utils.join(OBJECTS_DIR, sha1.substring(0, 2));
         if (!dir.exists()) {
             dir.mkdir();
         }
@@ -701,7 +761,7 @@ public class GitletRepository {
     /**
      * Persistent stage
      */
-    private static void saveStage(Stage stage) {
+    private void saveStage(Stage stage) {
         Utils.writeObject(STAGE, stage);
     }
 

@@ -1,5 +1,6 @@
 package gitlet;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -21,70 +22,88 @@ public class Main {
         if (args.length == 0) {
             exitWithError("Please enter a command.");
         }
-        if (!("init".equals(args[0]) || GitletRepository.GITLET_DIR.exists())) {
+        // .getlet file
+        File gitletDirectory = Utils.join(System.getProperty("user.dir"), ".gitlet");
+        if (!("init".equals(args[0]) || gitletDirectory.exists())) {
             exitWithError("Not in an initialized Gitlet directory.");
         }
+
+        // create GitletRepository object 
+        GitletRepository gitletRepository = new GitletRepository();
+        // create RemoteRepository Object
+        RemoteRepository remoteRepository = new RemoteRepository();
 
         // user inputs operands
         int operands = args.length - 1;
         switch (args[0]) {
             case ("init") -> {
                 validateNumArgs(operands, 0);
-                GitletRepository.init();
+                gitletRepository.init();
             }
             case ("add") -> {
                 validateNumArgs(operands, 1);
-                GitletRepository.add(args[1]);
+                gitletRepository.add(args[1]);
             }
             case ("commit") -> {
                 validateNumArgs(operands, 1);
-                GitletRepository.commit(args[1]);
+                gitletRepository.commit(args[1]);
             }
             case ("rm") -> {
                 validateNumArgs(operands, 1);
-                GitletRepository.rm(args[1]);
+                gitletRepository.rm(args[1]);
             }
             case ("log") -> {
                 validateNumArgs(operands, 0);
-                GitletRepository.log();
+                gitletRepository.log();
             }
             case ("global-log") -> {
                 validateNumArgs(operands, 0);
-                GitletRepository.globalLog();
+                gitletRepository.globalLog();
             }
             case ("find") -> {
                 validateNumArgs(operands, 1);
-                GitletRepository.find(args[1]);
+                gitletRepository.find(args[1]);
             }
             case ("status") -> {
                 validateNumArgs(operands, 0);
-                GitletRepository.status();
+                gitletRepository.status();
             }
             case ("checkout") -> {
                 validateNumArgs(operands, 1, 3);
                 // remove first arg
-                GitletRepository.checkout(Arrays.stream(args).skip(1).toArray(String[]::new));
+                gitletRepository.checkout(Arrays.stream(args).skip(1).toArray(String[]::new));
             }
             case ("branch") -> {
                 validateNumArgs(operands, 1);
-                GitletRepository.branch(args[1]);
+                gitletRepository.branch(args[1]);
             }
             case ("rm-branch") -> {
                 validateNumArgs(operands, 1);
-                GitletRepository.rmBranch(args[1]);
+                gitletRepository.rmBranch(args[1]);
             }
             case ("reset") -> {
                 validateNumArgs(operands, 1);
-                GitletRepository.reset(args[1]);
+                gitletRepository.reset(args[1]);
             }
             case ("merge") -> {
                 validateNumArgs(operands, 1);
-                GitletRepository.merge(args[1]);
+                gitletRepository.merge(args[1]);
+            }
+            case ("add-remote") -> {
+                validateNumArgs(operands, 2);
+                remoteRepository.addRemote(args[1], args[2]);
+            }
+            case ("rm-remote") -> {
+                validateNumArgs(operands, 1);
+                remoteRepository.rmRemote(args[1]);
+            }
+            case ("push") -> {
+                validateNumArgs(operands, 2);
+                remoteRepository.push(args[1], args[2]);
             }
             default -> exitWithError("No command with that name exists.");
         }
     }
-
 
 
     /**
@@ -93,7 +112,7 @@ public class Main {
      * print the message and exit.
      *
      * @param operands User input operands from command line
-     * @param number    Number of expected arguments
+     * @param number   Number of expected arguments
      */
     public static void validateNumArgs(int operands, int number) {
         validateNumArgs(operands, number, number);
