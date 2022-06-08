@@ -23,6 +23,7 @@ public class RemoteRepository {
     private final File OBJECTS_DIR = Utils.join(GITLET_DIR, "objects");
     private final File HEAD = Utils.join(GITLET_DIR, "HEAD");
 
+
     /**
      * add a remote gitlet directory
      */
@@ -34,6 +35,7 @@ public class RemoteRepository {
         removeFile.createNewFile();
         Utils.writeContents(removeFile, path);
     }
+
 
     /**
      * remove remote gitlet
@@ -87,18 +89,22 @@ public class RemoteRepository {
         remoteGitletRepository.reset(headSha1);
     }
 
+
+    /**
+     * Brings down commits from the remote Gitlet repository into the local Gitlet repository.
+     */
     public void fetch(String remoteName, String remoteBranchName) throws IOException {
         File remoteGitlet = getRemoteGitlet(remoteName);
-        if (!remoteGitlet.getName().equals(GITLET_NAME)) {
+        if (!remoteGitlet.getName().equals(GITLET_NAME) || !remoteGitlet.exists()) {
             exitWithError("Remote directory not found.");
         }
 
         File remoteBranch = Utils.join(remoteGitlet, "branches", remoteBranchName);
         if (!remoteBranch.exists()) {
-            System.out.println(remoteBranch.toPath());
             exitWithError("That remote does not have that branch.");
         }
 
+        // create new branch in current gitlet
         String branchName = remoteName + "/" + remoteBranchName;
         File currentBranch = Utils.join(BRANCH_DIR, branchName);
         if (!currentBranch.exists()) {
@@ -107,7 +113,6 @@ public class RemoteRepository {
         }
 
         String remoteCommitSha1 = Utils.readContentsAsString(remoteBranch);
-        String currentCommitSha1 = Utils.readContentsAsString(currentBranch);
         Utils.writeContents(currentBranch, remoteCommitSha1);
 
         // copies all remote commits and blobs to current gitlet
@@ -126,6 +131,17 @@ public class RemoteRepository {
         }
     }
 
+
+    /**
+     * Simple fetch and merge remote branch
+     */
+    public void pull(String remoteName, String remoteBranchName) throws IOException {
+        fetch(remoteName, remoteBranchName);
+        GitletRepository gitletRepository = new GitletRepository();
+        gitletRepository.merge(remoteName + "/" + remoteBranchName);
+    }
+
+
     /**
      * Get file object of remove gitlet directory
      */
@@ -137,12 +153,6 @@ public class RemoteRepository {
         return Utils.join(Utils.readContentsAsString(remote));
     }
 
-    /**
-     * Given remote branch name, get commit object
-     */
-    private Commit getRemoteBranch(File gitlet, String remoteBranchName) {
-        return getRemoteCommit(gitlet, getRemoteCommitSha1(gitlet, remoteBranchName));
-    }
 
     private String getRemoteCommitSha1(File gitlet, String remoteBranchName) {
         File remoteBranch = Utils.join(gitlet, "branches", remoteBranchName);
@@ -152,6 +162,7 @@ public class RemoteRepository {
         return Utils.readContentsAsString(remoteBranch);
     }
 
+
     /**
      * Get remove commit object
      */
@@ -160,12 +171,6 @@ public class RemoteRepository {
         return Utils.readObject(commit, Commit.class);
     }
 
-    /**
-     * delete files of remote working directory
-     */
-    private void clearRemoteWorkingDirectory(File workingDir, Commit remoteCommit) {
-        remoteCommit.getBlobs().keySet().forEach(filename -> Utils.join(workingDir, filename).delete());
-    }
 
     private void pushFile(File currentGitlet, File remoteGitlet, Commit head) throws IOException {
         Map<String, String> blobs = head.getBlobs();
@@ -179,6 +184,7 @@ public class RemoteRepository {
 
     }
 
+
     private File getObjectFile(File gitletDir, String sha1) {
         File dir = Utils.join(gitletDir, "objects", sha1.substring(0, 2));
         if (!dir.exists()) {
@@ -187,9 +193,4 @@ public class RemoteRepository {
         return Utils.join(dir, sha1.substring(2));
     }
 
-    private void remoteAdd(GitletRepository remote, Commit head) throws IOException {
-        for (String filename : head.getBlobs().keySet()) {
-            remote.add(filename);
-        }
-    }
 }

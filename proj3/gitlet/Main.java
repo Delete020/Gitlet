@@ -105,6 +105,10 @@ public class Main {
                 validateNumArgs(operands, 2);
                 remoteRepository.fetch(args[1], args[2]);
             }
+            case ("pull") -> {
+                validateNumArgs(operands, 2);
+                remoteRepository.pull(args[1], args[2]);
+            }
             default -> exitWithError("No command with that name exists.");
         }
     }
