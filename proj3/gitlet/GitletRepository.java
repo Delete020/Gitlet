@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,23 +23,31 @@ import java.util.*;
  */
 public class GitletRepository {
 
-    private String CWD = System.getProperty("user.dir");
-    private final String GITLET_NAME = ".gitlet";
-    private final File GITLET_DIR = Utils.join(CWD, GITLET_NAME);
-    private final File OBJECTS_DIR = Utils.join(GITLET_DIR, "objects");
-    private final File COMMIT_DIR = Utils.join(GITLET_DIR, "commit");
-    private final File BRANCH_DIR = Utils.join(GITLET_DIR, "branches");
-    private final File HEAD = Utils.join(GITLET_DIR, "HEAD");
-    private final File STAGE = Utils.join(GITLET_DIR, "stage");
-    private final File REMOTE_DIR = Utils.join(GITLET_DIR, "remote");
-    private final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z");
+    private final String CWD;
+    private final File GITLET_DIR;
+    private final File OBJECTS_DIR;
+    private final File COMMIT_DIR;
+    private final File BRANCH_DIR;
+    private final File HEAD;
+    private final File STAGE;
+    private final File REMOTE_DIR;
+    private static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z");
 
 
     public GitletRepository() {
+        this(System.getProperty("user.dir"));
     }
 
     public GitletRepository(String CWD) {
         this.CWD = CWD;
+        String GITLET_NAME = ".gitlet";
+        GITLET_DIR = Utils.join(CWD, GITLET_NAME);
+        OBJECTS_DIR = Utils.join(GITLET_DIR, "objects");
+        COMMIT_DIR = Utils.join(GITLET_DIR, "commit");
+        BRANCH_DIR = Utils.join(GITLET_DIR, "branches");
+        HEAD = Utils.join(GITLET_DIR, "HEAD");
+        STAGE = Utils.join(GITLET_DIR, "stage");
+        REMOTE_DIR = Utils.join(GITLET_DIR, "remote");
     }
 
     /**
@@ -443,7 +452,7 @@ public class GitletRepository {
 
         for (Map.Entry<String, String> entry : restoreBlobs.entrySet()) {
             File file = Utils.join(CWD, entry.getKey());
-            Files.copy(getObjectFile(entry.getValue()).toPath(), file.toPath());
+            Files.copy(getObjectFile(entry.getValue()).toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
 
         // clear staging area
@@ -738,7 +747,7 @@ public class GitletRepository {
     /**
      * Persistent commit
      */
-    private void persistentCommit(String sha1, Serializable obj) {
+    public void persistentCommit(String sha1, Serializable obj) {
         Utils.writeObject(Utils.join(COMMIT_DIR, sha1), obj);
     }
 
