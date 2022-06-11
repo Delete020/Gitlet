@@ -109,6 +109,11 @@ public class Main {
                 validateNumArgs(operands, 2);
                 remoteRepository.pull(args[1], args[2]);
             }
+            case ("diff") -> {
+                validateNumArgs(operands, 0, 2);
+                // remove first arg
+                remoteRepository.diff(Arrays.stream(args).skip(1).toArray(String[]::new));
+            }
             default -> exitWithError("No command with that name exists.");
         }
     }

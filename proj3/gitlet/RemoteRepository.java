@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static gitlet.GitletRepository.exitWithError;
 
@@ -143,6 +145,128 @@ public class RemoteRepository {
 
 
     /**
+     * Compares the contents of a commit with a working directory or compares two commits
+     */
+    public void diff(String... branches) {
+        switch (branches.length) {
+            case 0 -> diffHeadWithWorkingDirectory();
+            case 1 -> diffBranchWithWorkingDirectory(branches[0]);
+            case 2 -> diffTwoBranch(branches[0], branches[1]);
+        }
+    }
+
+    /**
+     * Compare the commit at the head of the current branch with the files in the working directory.
+     */
+    private void diffHeadWithWorkingDirectory() {
+        Map<String, String> blobs = getHead().getBlobs();
+        for (String filename : blobs.keySet()) {
+            File commitFile = getCurrentObjectFile(blobs.get(filename));
+            File workingFile = getWorkingDirectoryFile(filename);
+            diffs(filename, commitFile, workingFile);
+        }
+    }
+
+
+    /**
+     * Compare commit in the specified branch header with files in the working directory.
+     */
+    private void diffBranchWithWorkingDirectory(String branch) {
+        if (branchNotExist(branch)) {
+            exitWithError("A branch with that name does not exist.");
+        }
+        Map<String, String> blobs = getBranch(branch).getBlobs();
+        for (String filename : blobs.keySet()) {
+            File commitFile = getCurrentObjectFile(blobs.get(filename));
+            File workingFile = getWorkingDirectoryFile(filename);
+            diffs(filename, commitFile, workingFile);
+        }
+    }
+
+
+    /**
+     * Compares the files in two specified branch header commits.
+     */
+    private void diffTwoBranch(String firstBranch, String secondBranch) {
+        if (branchNotExist(firstBranch) && branchNotExist(secondBranch)) {
+            exitWithError("At least one branch does not exist.");
+        }
+        Map<String, String> firstBlobs = getBranch(firstBranch).getBlobs();
+        Map<String, String> secondBlobs = getBranch(secondBranch).getBlobs();
+        Set<String> blobs = new TreeSet<>(firstBlobs.keySet());
+        blobs.addAll(secondBlobs.keySet());
+
+        for (String filename : blobs) {
+            String firstSha1 = firstBlobs.get(filename);
+            String secondSha1 = secondBlobs.get(filename);
+            File firstFile = firstSha1 == null ? null : getCurrentObjectFile(firstBlobs.get(filename));
+            File secondFile = secondSha1 == null ? null : getCurrentObjectFile(secondBlobs.get(filename));
+            diffs(filename, firstFile, secondFile);
+        }
+    }
+
+
+    /**
+     * Check branch is not in the current gitlet
+     */
+    private boolean branchNotExist(String branch) {
+        return !Utils.join(BRANCH_DIR, branch).exists();
+    }
+
+
+    /**
+     * Use diff to compare content of two file
+     */
+    private void diffs(String filename, File firstVersion, File secondVersion) {
+        Diff diff = new Diff();
+        // set two file to Diff
+        diff.setSequences(firstVersion, secondVersion);
+        // If two files are the same, skip
+        if (diff.sequencesEqual()) {
+            return;
+        }
+
+        // output compare information
+        diffHeaderInfo(filename, firstVersion, secondVersion);
+        // diff line array
+        int[] diffs = diff.diffs();
+        for (int i = 0; i < diffs.length; i += 4) {
+            int n1 = diffs[i + 1];
+            int n2 = diffs[i + 3];
+            int l1 = n1 == 0 ? diffs[i] : diffs[i] + 1;
+            int l2 = n2 == 0 ? diffs[i + 2] : diffs[i + 2] + 1;
+
+            // sequence of edits
+            String edits1 = n1 == 1 ? l1 + "" : l1 + "," + n1;
+            String edits2 = n2 == 1 ? l2 + "" : l2 + "," + n2;
+            System.out.println("@@ -" + edits1 + " +" + edits2 + " @@");
+
+            l1 = diffs[i];
+            for (int j = 0; j < n1; j++) {
+                System.out.println("-" + diff.get1(l1 + j));
+            }
+
+            l2 = diffs[i + 2];
+            for (int j = 0; j < n2; j++) {
+                System.out.println("+" + diff.get2(l2 + j));
+            }
+        }
+    }
+
+
+    /**
+     * The start of the differences for one of the files in the two versions
+     */
+    private void diffHeaderInfo(String filename, File firstVersionFile, File secondVersionFile) {
+        String firstFilename = firstVersionFile != null && firstVersionFile.exists() ? "a/" + filename : "/dev/null";
+        String secondFilename = secondVersionFile != null && secondVersionFile.exists() ? "b/" + filename : "/dev/null";
+        System.out.println("diff --git " + firstFilename + " " + secondFilename);
+        System.out.println("--- " + firstFilename);
+        System.out.println("+++ " + secondFilename);
+    }
+
+
+    /**
      * Get file object of remove gitlet directory
      */
     private File getRemoteGitlet(String remoteName) {
@@ -154,6 +278,9 @@ public class RemoteRepository {
     }
 
 
+    /**
+     * Get the sha1 of the specified branch header in the specified gitlet directory
+     */
     private String getRemoteCommitSha1(File gitlet, String remoteBranchName) {
         File remoteBranch = Utils.join(gitlet, "branches", remoteBranchName);
         if (!remoteBranch.exists()) {
@@ -164,6 +291,13 @@ public class RemoteRepository {
 
 
     /**
+     * Get commit object using sha1
+     */
+    private Commit getCurrentCommit(String sha1) {
+        return getRemoteCommit(GITLET_DIR, sha1);
+    }
+
+    /**
      * Get remove commit object
      */
     private Commit getRemoteCommit(File gitlet, String sha1) {
@@ -172,25 +306,63 @@ public class RemoteRepository {
     }
 
 
+    /**
+     * Push current files of head commit to the objects directory of remote gitlet
+     */
     private void pushFile(File currentGitlet, File remoteGitlet, Commit head) throws IOException {
         Map<String, String> blobs = head.getBlobs();
         for (String filename : blobs.keySet()) {
-
             String fileSha1 = blobs.get(filename);
             File currentFile = getObjectFile(currentGitlet, fileSha1);
             File remoteFile = getObjectFile(remoteGitlet, fileSha1);
             Files.copy(currentFile.toPath(), remoteFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
-
     }
 
 
+    /**
+     * Get the object file under the current gitlet
+     */
+    private File getCurrentObjectFile(String sha1) {
+        return getObjectFile(GITLET_DIR, sha1);
+    }
+
+
+    /**
+     * Get the object file under the specified gitlet
+     */
     private File getObjectFile(File gitletDir, String sha1) {
         File dir = Utils.join(gitletDir, "objects", sha1.substring(0, 2));
         if (!dir.exists()) {
             dir.mkdir();
         }
         return Utils.join(dir, sha1.substring(2));
+    }
+
+
+    /**
+     * Get the files in the current working directory
+     */
+    private File getWorkingDirectoryFile(String filename) {
+        return Utils.join(CWD, filename);
+    }
+
+
+    /**
+     * Get head commit object
+     */
+    private Commit getHead() {
+        String headContext = Utils.readContentsAsString(HEAD);
+        return getBranch(headContext);
+    }
+
+
+    /**
+     * Get the head commit of the specified branch
+     */
+    private Commit getBranch(String branch) {
+        String commitSha1 = Utils.readContentsAsString(Utils.join(BRANCH_DIR, branch));
+        return getCurrentCommit(commitSha1);
     }
 
 }

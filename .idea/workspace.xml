@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="add push and fetch, bug fixes">
+    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="add pull, bug fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/gitlet/RemoteRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/gitlet/RemoteRepository.java" afterDir="false" />
@@ -96,7 +96,12 @@
       <workItem from="1654503569588" duration="20673000" />
       <workItem from="1654530598395" duration="6851000" />
       <workItem from="1654585983518" duration="22308000" />
-      <workItem from="1654691139497" duration="13096000" />
+      <workItem from="1654691139497" duration="13325000" />
+      <workItem from="1654706667031" duration="1669000" />
+      <workItem from="1654742963986" duration="1012000" />
+      <workItem from="1654787971432" duration="624000" />
+      <workItem from="1654830536119" duration="1096000" />
+      <workItem from="1654926392789" duration="16176000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1653091748177</created>
@@ -259,7 +264,14 @@
       <option name="project" value="LOCAL" />
       <updated>1654704578422</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="add pull, bug fixes">
+      <created>1654705698891</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1654705698891</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -300,6 +312,7 @@
     <MESSAGE value="add test files" />
     <MESSAGE value="add add-remove and rm-remote command, modify static method, bug fixes" />
     <MESSAGE value="add push and fetch, bug fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="add push and fetch, bug fixes" />
+    <MESSAGE value="add pull, bug fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="add pull, bug fixes" />
   </component>
 </project>
