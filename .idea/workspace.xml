@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="finish diff, add test files">
+    <list default="true" id="4a184e40-f84b-4661-9993-303ecbbf9416" name="变更" comment="update design document">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proj3/testing/gitlet/gitlet-design.md" beforeDir="false" afterPath="$PROJECT_DIR$/proj3/testing/gitlet/gitlet-design.md" afterDir="false" />
     </list>
@@ -101,7 +101,7 @@
       <workItem from="1654787971432" duration="624000" />
       <workItem from="1654830536119" duration="1096000" />
       <workItem from="1654926392789" duration="19069000" />
-      <workItem from="1655007793395" duration="11731000" />
+      <workItem from="1655007793395" duration="12029000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1653091748177</created>
@@ -278,7 +278,14 @@
       <option name="project" value="LOCAL" />
       <updated>1654954114631</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="update design document">
+      <created>1655044734030</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1655044734030</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -296,7 +303,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="init" />
     <MESSAGE value="sp21 lab6 Skeleton Code" />
     <MESSAGE value="lab6 complete" />
     <MESSAGE value="finish init" />
@@ -321,6 +327,7 @@
     <MESSAGE value="add push and fetch, bug fixes" />
     <MESSAGE value="add pull, bug fixes" />
     <MESSAGE value="finish diff, add test files" />
-    <option name="LAST_COMMIT_MESSAGE" value="finish diff, add test files" />
+    <MESSAGE value="update design document" />
+    <option name="LAST_COMMIT_MESSAGE" value="update design document" />
   </component>
 </project>
